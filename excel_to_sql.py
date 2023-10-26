@@ -26,15 +26,14 @@ def export_to_sqlite():
     # Циxкл по строкам начиная со второй (в первой заголовки)
     classes = [sheet.cell(1, col).value for col in range(1, 21) if sheet.cell(1, col).value]
     count_days = 0
-    day = None
     count_letters = 0
-    print(classes)
     for row in range(2, sheet.max_row + 1):
         count_days += 1
-        if count_days % 9 == 0 or count_days == 1:
-            count_days = 0
+        if count_days == 1:
             day = sheet.cell(row, 1).value
-            print(day)
+        elif count_days % 9 == 0:
+            day = sheet.cell(row, 1).value
+            count_days = 1
         # Объявление списка
         data = []
         count_columns = 0
@@ -46,7 +45,6 @@ def export_to_sqlite():
             # Список который мы потом будем добавлять
             data.append(value)
             if count_columns == 3:
-                print(classes[count_letters])
                 data.append(classes[count_letters])
                 count_letters += 1
                 count_columns = 0
