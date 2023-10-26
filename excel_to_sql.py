@@ -17,27 +17,46 @@ def export_to_sqlite():
     # курсор - это специальный объект, который делает запросы и получает результаты запросов
     cursor = connect.cursor()
     # создание таблицы если ее не существует
-    cursor.execute('CREATE TABLE IF NOT EXISTS timetables (brand text, model text, distance int , year int)')
+    cursor.execute('CREATE TABLE IF NOT EXISTS timetables (lesson_pos, lesson, cabinet, class_letter, day)')
 
     # 2. Работа c xlsx файлом
     # Читаем файл и лист1 книги excel
     file_to_read = openpyxl.load_workbook('Расписание.xlsx', data_only=True)
     sheet = file_to_read['5 класс']
     # Циxкл по строкам начиная со второй (в первой заголовки)
-
+    classes = [sheet.cell(1, col).value for col in range(1, 21) if sheet.cell(1, col).value]
+    count_days = 0
+    day = None
+    count_letters = 0
+    print(classes)
     for row in range(2, sheet.max_row + 1):
+        count_days += 1
+        if count_days % 9 == 0 or count_days == 1:
+            count_days = 0
+            day = sheet.cell(row, 1).value
+            print(day)
         # Объявление списка
         data = []
+        count_columns = 0
         # Цикл по столбцам от 1 до 4 ( 22 не включая)
         for col in range(2, 21):
+            count_columns += 1
             # value содержит значение ячейки с координатами row col
             value = sheet.cell(row, col).value
             # Список который мы потом будем добавлять
             data.append(value)
-
+            if count_columns == 3:
+                print(classes[count_letters])
+                data.append(classes[count_letters])
+                count_letters += 1
+                count_columns = 0
+                data.append(day)
+                cursor.execute("INSERT INTO timetables VALUES (?, ?, ?, ?, ?);",
+                               (data[0], data[1], data[2], data[3], data[4]))
+                data = []
+        count_letters = 0
     # 3. Запись в базу и закрытие соединения
         # Вставка данных в поля таблицы
-        cursor.execute("INSERT INTO timetables VALUES (?, ?, ?, ?);", (data[0], data[1], data[2], data[3]))
 
     # сохраняем изменения
     connect.commit()
