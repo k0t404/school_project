@@ -21,7 +21,7 @@ def get_text_messages(message):
         qu1(message)
 
     elif message.text.split()[0] == 'Расписание':
-        clas = (message.text.split())[1]
+        clas = (message.text.split())[1:]
         raspisanie(clas, message)
 
     elif message.text == 'Задать вопрос':
