@@ -21,11 +21,8 @@ def export_to_sqlite(grade, file_name):
     for row in range(2, 41):
         count_classes = 0
         count_days += 1
-        if count_days == 1:
+        if str(sheet.cell(row, 2).value) == '1':
             day = sheet.cell(row, 1).value
-        elif count_days % 9 == 0:
-            day = sheet.cell(row, 1).value
-            count_days = 1
         # Обновление списка
         data = []
         count_columns = 0
