@@ -15,12 +15,10 @@ def export_to_sqlite(grade, file_name):
     sheet = file_to_read[f'{int(grade)} класс']
     # Циxкл по строкам
     classes = [sheet.cell(1, col).value for col in range(1, sheet.max_column + 1) if sheet.cell(1, col).value]
-    count_days = 0
     day = None
     # Цикл по строчкам
     for row in range(2, 41):
         count_classes = 0
-        count_days += 1
         if str(sheet.cell(row, 2).value) == '1':
             day = sheet.cell(row, 1).value
         # Обновление списка
