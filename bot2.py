@@ -1,7 +1,7 @@
 import telebot
 from con2 import BOT_TOKEN
 from comm2 import starts, helper, search, question, qu1, raspisanie, ismeneniya, qu2, authorization
-
+from data import db_session
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
@@ -12,7 +12,7 @@ def start(message):
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
-
+    db_session.global_init("db/logs.db")
     if message.text == '👋 Поздороваться':
         search(message)
         # ответ бота
