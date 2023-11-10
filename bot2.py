@@ -31,15 +31,20 @@ def get_text_messages(message):
         qu2(message)
 
     elif message.text == 'Авторизоваться':
+        print('!!!')
         qu3(message)
 
     elif message.text.lower() == 'учитель' or message.text.lower() == 'завуч' or message.text.lower() == 'ученик':
+        print('&&&&&')
         qu4(message)
 
-    elif message.text.lower() == '11111':
-        authorization(1, message)
-    elif message.text.lower() == '10 И':
-        authorization(2, message)
+    elif message.text.lower() == '1111111':
+        authorization(message)
+
+    elif ' '.join(message.text) == '10 И':
+        print(1)
+        authorization(message)
+
     elif message.text == 'Что может бот?':
         helper(message)
 

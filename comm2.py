@@ -77,36 +77,33 @@ def qu3(message):
 
 
 def qu4(message):
-    if message == 'завуч':
+    if message.text.lower() == 'завуч':
         bot.send_message(message.from_user.id, "Введите специальный ключ")
-    if message == 'учитель':
+    if message.text.lower() == 'учитель':
         bot.send_message(message.from_user.id, "Введите специальный ключ")
-    if message == 'ученик':
+    if message.text.lower() == 'ученик':
         bot.send_message(message.from_user.id, "Введите класс")
 
 
 def authorization(message):
+    print(1)
     print(1, message.from_user.id, message.chat.id)
     db_sess = db_session.create_session()
-    if len(message) == 9:
-        user = User()
-        user.user_id = message.from_user.id
+    user = User()
+    user.user_id = message.from_user.id
+    if len(message.text) == 9:
         user.about = 'завуч'
-        user.hashed_password = user.set_password(message)
-        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard())
-    elif len(message) == 7:
-        user = User()
-        user.user_id = message.from_user.id
+        user.hashed_password = user.set_password(message.text)
+    elif len(message.text) == 7:
         user.about = 'учитель'
-        user.hashed_password = user.set_password(message)
-        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard())
-    elif len(message) == 4 or len(message) == 3:
-        user = User()
-        user.user_id = message.from_user.id
+        user.hashed_password = user.set_password(message.text)
+    elif len(message.text) == 4 or len(message) == 3:
         user.about = 'ученик'
-        user.hashed_password = '-------'
-        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard())
-
+        user.hashed_password = f'{message.text[0]} "{message.text[1]}" класс'
+        print(f'{message.text[0]} "{message.text[1]}" класс')
+    db_sess.add(user)
+    db_sess.commit()
+    bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard())
 
 def ismeneniya(message):
     pass
