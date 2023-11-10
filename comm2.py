@@ -4,7 +4,7 @@ from con2 import BOT_TOKEN
 from telebot import types
 from data import db_session
 from data.lesssons import Lesssons
-
+from  data.users import User
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -14,8 +14,9 @@ def start_keyboard():
     btn1 = types.KeyboardButton('Что может бот?')
     btn2 = types.KeyboardButton('Расписание_уроков')
     btn3 = types.KeyboardButton('Внести изменения')
+    btn4 = types.KeyboardButton('Авторизоваться')
     btn5 = types.KeyboardButton('Задать вопрос')
-    markup.add(btn1, btn2, btn3, btn5)
+    markup.add(btn1, btn2, btn3, btn4, btn5)
     return markup
 
 
@@ -23,7 +24,8 @@ def starts(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("👋 Поздороваться")
     markup.add(btn1)
-    bot.send_message(message.from_user.id, "👋 Привет! Я бот Артем, и я помогу тебе в расписании!", reply_markup=markup)
+    bot.send_message(message.from_user.id, "👋 Привет! Я бот Артем, и я помогу тебе в расписании!",
+                     reply_markup=start_keyboard())
 
 
 def search(message):
@@ -67,13 +69,43 @@ def qu1(message):
 
 
 def qu2(message):
-    bot.send_message(message.from_user.id, "Введите ключ: Ключ (ваш ключ)")
+    pass
 
 
-def authorization(key, message):
-    print(key)
-    bot.send_message(message.from_user.id, 'вв', reply_markup=start_keyboard())
-    # тут будет авторизация для завуча
+def qu3(message):
+    bot.send_message(message.from_user.id, "Кто вы? (Завуч/учитель/ученик")
+
+
+def qu4(message):
+    if message == 'завуч':
+        bot.send_message(message.from_user.id, "Введите специальный ключ")
+    if message == 'учитель':
+        bot.send_message(message.from_user.id, "Введите специальный ключ")
+    if message == 'ученик':
+        bot.send_message(message.from_user.id, "Введите класс")
+
+
+def authorization(message):
+    print(1, message.from_user.id, message.chat.id)
+    db_sess = db_session.create_session()
+    if len(message) == 9:
+        user = User()
+        user.user_id = message.from_user.id
+        user.about = 'завуч'
+        user.hashed_password = user.set_password(message)
+        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard())
+    elif len(message) == 7:
+        user = User()
+        user.user_id = message.from_user.id
+        user.about = 'учитель'
+        user.hashed_password = user.set_password(message)
+        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard())
+    elif len(message) == 4 or len(message) == 3:
+        user = User()
+        user.user_id = message.from_user.id
+        user.about = 'ученик'
+        user.hashed_password = '-------'
+        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard())
 
 
 def ismeneniya(message):
