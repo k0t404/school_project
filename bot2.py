@@ -2,6 +2,7 @@ import telebot
 from con2 import BOT_TOKEN
 from comm2 import starts, helper, search, question, qu1, raspisanie, ismeneniya, qu2, authorization, qu3, qu4
 from data import db_session
+from data.keys import Keys
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
@@ -13,6 +14,8 @@ def start(message):
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     db_session.global_init("db/logs.db")
+    db_sess = db_session.create_session()
+
     if message.text == '👋 Поздороваться':
         search(message)
         # ответ бота
@@ -38,7 +41,7 @@ def get_text_messages(message):
         print('&&&&&')
         qu4(message)
 
-    elif message.text.lower() == '1111111':
+    elif db_sess.query(Keys).filter(Keys.key_available == message.text.lower()).first():
         authorization(message)
 
     elif ' '.join(message.text) == '10 И':

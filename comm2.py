@@ -93,10 +93,10 @@ def authorization(message):
     user.user_id = message.from_user.id
     if len(message.text) == 9:
         user.about = 'завуч'
-        user.hashed_password = user.set_password(message.text)
+        user.hashed_password = message.text
     elif len(message.text) == 7:
         user.about = 'учитель'
-        user.hashed_password = user.set_password(message.text)
+        user.hashed_password = message.text
     elif len(message.text) == 4 or len(message) == 3:
         user.about = 'ученик'
         user.hashed_password = f'{message.text[0]} "{message.text[1]}" класс'
