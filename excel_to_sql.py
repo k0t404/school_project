@@ -76,7 +76,3 @@ def process_control(*grade_start_end, file_name, wreck_apart=False):
         grade_start, grade_end = grade_start_end[0]
         for grade in range(int(grade_start), int(grade_end) + 1):
             export_to_sqlite(grade, file_name)
-
-
-# Запуск функции
-process_control((5, 11), file_name='Расписание')

@@ -45,23 +45,31 @@ def helper(message):
     bot.send_message(message.from_user.id, "Играть в доту 2", reply_markup=start_keyboard())
 
 
-def raspisanie(clas, message):
+def raspisanie(clas, message, autharized_student=False):
     days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
-    date = days[datetime.datetime.today().weekday()]
-    clas = f'{clas[0]} "{clas[1].capitalize()}" класс'
-    db_sess = db_session.create_session()
-    lessons = []
-    for row in db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date):
-        lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
-        lessons.append(lesson)
-    if lessons:
-        bot.send_message(message.from_user.id, f'Расписание для {clas}', reply_markup=start_keyboard())
-        for row in lessons:
-            if None not in row:
-                bot.send_message(message.from_user.id, '       '.join(row), reply_markup=start_keyboard())
+    if autharized_student:
+        clas = clas
     else:
-        bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова',
+        clas = f'{clas[0]} "{clas[1].capitalize()}" класс'
+
+    if datetime.datetime.today().weekday() > 4:
+        bot.send_message(message.from_user.id, 'Бот отказывается работать в выходные. Иди к МЭШ-у',
                          reply_markup=start_keyboard())
+    else:
+        date = days[datetime.datetime.today().weekday()]
+        db_sess = db_session.create_session()
+        lessons = []
+        for row in db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date):
+            lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
+            lessons.append(lesson)
+        if lessons:
+            bot.send_message(message.from_user.id, f'Расписание для {clas}', reply_markup=start_keyboard())
+            for row in lessons:
+                if None not in row:
+                    bot.send_message(message.from_user.id, '       '.join(row), reply_markup=start_keyboard())
+        else:
+            bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова',
+                             reply_markup=start_keyboard())
 
 
 def qu1(message):
@@ -92,13 +100,13 @@ def authorization(message):
     user.user_id = message.from_user.id
     if len(message.text) == 9:
         user.about = 'завуч'
-        user.hashed_password = message.text
+        user.user_key = message.text
     elif len(message.text) == 7:
         user.about = 'учитель'
-        user.hashed_password = message.text
+        user.user_key = message.text
     elif len(message.text.split()) == 3:
         user.about = 'ученик'
-        user.hashed_password = f'{message.text.split()[1]} "{message.text.split()[2].upper()}" класс'
+        user.user_key = f'{message.text.split()[1]} "{message.text.split()[2].upper()}" класс'
         print(f'{message.text[0]} "{message.text[1]}" класс')
     db_sess.add(user)
     db_sess.commit()
