@@ -73,7 +73,7 @@ def qu2(message):
 
 
 def qu3(message):
-    bot.send_message(message.from_user.id, "Кто вы? (Завуч/учитель/ученик")
+    bot.send_message(message.from_user.id, "Кто вы? (Завуч/учитель/ученик)")
 
 
 def qu4(message):
@@ -82,12 +82,11 @@ def qu4(message):
     if message.text.lower() == 'учитель':
         bot.send_message(message.from_user.id, "Введите специальный ключ")
     if message.text.lower() == 'ученик':
-        bot.send_message(message.from_user.id, "Введите класс")
+        bot.send_message(message.from_user.id,
+                         "Введите следующие слова (без ковычек). 'авторизация номер_класса буква_класса'")
 
 
 def authorization(message):
-    print(1)
-    print(1, message.from_user.id, message.chat.id)
     db_sess = db_session.create_session()
     user = User()
     user.user_id = message.from_user.id
@@ -97,9 +96,9 @@ def authorization(message):
     elif len(message.text) == 7:
         user.about = 'учитель'
         user.hashed_password = message.text
-    elif len(message.text) == 4 or len(message) == 3:
+    elif len(message.text.split()) == 3:
         user.about = 'ученик'
-        user.hashed_password = f'{message.text[0]} "{message.text[1]}" класс'
+        user.hashed_password = f'{message.text.split()[1]} "{message.text.split()[2].upper()}" класс'
         print(f'{message.text[0]} "{message.text[1]}" класс')
     db_sess.add(user)
     db_sess.commit()
