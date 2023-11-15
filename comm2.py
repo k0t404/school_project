@@ -112,9 +112,13 @@ def authorization(message):
     db_sess.commit()
     bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard())
 
+
 def ismeneniya(message):
     pass
 
+
+def search_for(message):
+    pass
 
 # не нужные
 '''def url(message):
