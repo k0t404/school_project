@@ -25,7 +25,7 @@ def export_to_sqlite(grade, file_name):
         data = []
         count_columns = 0
         # Цикл по столбцам
-        for col in range(2, len(classes) * 3):
+        for col in range(2, (len(classes) + 1) * 3):
             count_columns += 1
             # value содержит значение ячейки с координатами row col
             value = sheet.cell(row, col).value
@@ -76,3 +76,6 @@ def process_control(*grade_start_end, file_name, wreck_apart=False):
         grade_start, grade_end = grade_start_end[0]
         for grade in range(int(grade_start), int(grade_end) + 1):
             export_to_sqlite(grade, file_name)
+
+
+process_control((5, 11), file_name='Расписание')
