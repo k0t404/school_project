@@ -5,6 +5,7 @@ from telebot import types
 from data import db_session
 from data.lesssons import Lesssons
 from  data.users import User
+from data.changes import Changes
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -41,8 +42,7 @@ def helper(message):
     bot.send_message(message.from_user.id, "Я бот Артем.")
     bot.send_message(message.from_user.id, "Я могу:")
     bot.send_message(message.from_user.id, "Вывести расписание на сегодня")
-    bot.send_message(message.from_user.id, "Внести изменения в рассписание класса")
-    bot.send_message(message.from_user.id, "Играть в доту 2", reply_markup=start_keyboard())
+    bot.send_message(message.from_user.id, "Внести изменения в рассписание класса", reply_markup=start_keyboard())
 
 
 def raspisanie(clas, message, autharized_student=False):
@@ -75,9 +75,8 @@ def raspisanie(clas, message, autharized_student=False):
 def qu1(message):
     bot.send_message(message.from_user.id, "Введите: Расписание 'ваш класс(к примеру 1 ь)'")
 
-
 def qu2(message):
-    pass
+    bot.send_message(message.from_user.id, "Введите: Изменение 'класс номер_урока кабинет название_урока")
 
 
 def qu3(message):
@@ -113,12 +112,33 @@ def authorization(message):
     bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard())
 
 
-def ismeneniya(message):
-    pass
+def ismeneniya(message, clas, number, cabinet, lesson):
+    days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
+    if datetime.datetime.today().weekday() > 4:
+        bot.send_message(message.from_user.id, 'В выходные невозможно вносить изменения',
+                         reply_markup=start_keyboard())
+    else:
+        date = days[datetime.datetime.today().weekday()]
+        db_sess = db_session.create_session()
+        items = Changes()
+        items.lesson_pos = number
+        items.lesson = lesson
+        items.cabinet = cabinet
+        items.class_letter = clas
+        items.day = date
+        db_sess.add(items)
+        db_sess.commit()
+        title = db_sess.query(Changes).filter(Changes.lesson == lesson, Changes.day == date).first()
+        if title:
+            bot.send_message(message.from_user.id, 'Изменение было успешно сохраненно', reply_markup=start_keyboard())
+        else:
+            bot.send_message(message.from_user.id, 'Не удалось внести изменение, попробуйте ещё раз', reply_markup=start_keyboard())
+
 
 
 def search_for(message):
     pass
+
 
 # не нужные
 '''def url(message):
