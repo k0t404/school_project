@@ -1,7 +1,7 @@
 import telebot
 from con2 import BOT_TOKEN
 from comm2 import starts, helper, search, question, qu1, raspisanie, ismeneniya, qu2, authorization, qu3, qu4, \
-    start_keyboard
+    start_keyboard, qu5, announce
 from data import db_session
 from data.keys import Keys
 from data.lesssons import Lesssons
@@ -45,7 +45,7 @@ def get_text_messages(message):
         if authorized_user.about == 'завуч':
             qu2(message)
         else:
-            bot.send_message(message.from_user.id, "У вас нет прав для изменения в расписании",
+            bot.send_message(message.from_user.id, "У вас нет прав для изменения расписания",
                              reply_markup=start_keyboard(message.from_user.id))
 
     elif message.text.split()[0] == 'Изменение':
@@ -53,7 +53,7 @@ def get_text_messages(message):
             clas, number, cabinet, lesson = message.text.split()[1:]
             ismeneniya(message, clas, number, cabinet, lesson)
         else:
-            bot.send_message(message.from_user.id, "У вас нет прав для изменения в расписании",
+            bot.send_message(message.from_user.id, "У вас нет прав для изменения расписания",
                              reply_markup=start_keyboard(message.from_user.id))
 
     # начало всей аторизации
@@ -61,6 +61,12 @@ def get_text_messages(message):
         qu3(message)
         # Ниже финальная версия и ее нужно будет вернуть, н ос ней станет сложнее работать, т.к. мы не
         # сможем заводить новые аккунты в боте
+
+    elif message.text == 'Отправить сообщение классу':
+        qu5(message)
+
+    elif message.text.split()[0].lower() == 'сообщение':
+        announce(message)
 
     # продолжение авторизации (определение пользователя)
     elif message.text.lower() == 'учитель' or message.text.lower() == 'завуч' or message.text.lower() == 'ученик':

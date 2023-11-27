@@ -19,7 +19,8 @@ def start_keyboard(user_id):
     btn3 = types.KeyboardButton('Внести изменения')
     btn4 = types.KeyboardButton('Авторизоваться')
     btn5 = types.KeyboardButton('Задать вопрос')
-    markup.add(btn1, btn2, btn3, btn4, btn5)
+    btn6 = types.KeyboardButton('Отправить сообщение классу')
+    markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
     return markup
 
 
@@ -99,6 +100,17 @@ def qu4(message):
                          "Введите следующие слова (без ковычек). 'авторизация номер_класса буква_класса'")
 
 
+def qu5(message):
+    db_sess = db_session.create_session()
+    person = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
+    if person.about != 'ученик':
+        bot.send_message(message.from_user.id,
+                         "Введите следующие слова (без ковычек). 'Сообщение для 10И В субботу выходной'")
+    else:
+        bot.send_message(message.from_user.id,
+                         "У вас нет доступа к данной функции")
+
+
 def authorization(message):
     db_sess = db_session.create_session()
     user = User()
@@ -154,6 +166,24 @@ def ismeneniya(message, clas, number, cabinet, lesson):
 
 def search_for(message):
     pass
+
+
+def announce(message):
+    db_sess = db_session.create_session()
+    person = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
+    if person.about != 'ученик':
+        clas = message.text.split()[2]
+        things_to_announce = ' '.join(message.text.split()[3:])
+        clas = f'{clas[:-1]} "{clas[-1]}" класс'
+        students = db_sess.query(User).filter(User.user_key == clas)
+        for student in students:
+            bot.send_message(student.user_id, things_to_announce,
+                             reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, 'Сообщение отправлено',
+                         reply_markup=start_keyboard(message.from_user.id))
+    else:
+        bot.send_message(message.from_user.id,
+                         "У вас нет доступа к данной функции")
 
 
 # не нужные
