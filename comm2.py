@@ -103,12 +103,16 @@ def qu4(message):
 def qu5(message):
     db_sess = db_session.create_session()
     person = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
-    if person.about != 'ученик':
-        bot.send_message(message.from_user.id,
-                         "Введите следующие слова (без ковычек). 'Сообщение для 10И В субботу выходной'")
+    if person:
+        if person.about != 'ученик':
+            bot.send_message(message.from_user.id,
+                             "Введите следующие слова (без ковычек). 'Сообщение для 10И В субботу выходной'")
+        else:
+            bot.send_message(message.from_user.id,
+                             "У вас нет доступа к данной функции")
     else:
         bot.send_message(message.from_user.id,
-                         "У вас нет доступа к данной функции")
+                         "Вы не авторизованы.")
 
 
 def authorization(message):
@@ -171,19 +175,23 @@ def search_for(message):
 def announce(message):
     db_sess = db_session.create_session()
     person = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
-    if person.about != 'ученик':
-        clas = message.text.split()[2]
-        things_to_announce = ' '.join(message.text.split()[3:])
-        clas = f'{clas[:-1]} "{clas[-1]}" класс'
-        students = db_sess.query(User).filter(User.user_key == clas)
-        for student in students:
-            bot.send_message(student.user_id, things_to_announce,
+    if person:
+        if person.about != 'ученик':
+            clas = message.text.split()[2]
+            things_to_announce = ' '.join(message.text.split()[3:])
+            clas = f'{clas[:-1]} "{clas[-1]}" класс'
+            students = db_sess.query(User).filter(User.user_key == clas)
+            for student in students:
+                bot.send_message(student.user_id, things_to_announce,
+                                 reply_markup=start_keyboard(message.from_user.id))
+            bot.send_message(message.from_user.id, 'Сообщение отправлено',
                              reply_markup=start_keyboard(message.from_user.id))
-        bot.send_message(message.from_user.id, 'Сообщение отправлено',
-                         reply_markup=start_keyboard(message.from_user.id))
+        else:
+            bot.send_message(message.from_user.id,
+                             "У вас нет доступа к данной функции")
     else:
         bot.send_message(message.from_user.id,
-                         "У вас нет доступа к данной функции")
+                         "Вы не авторизованы.")
 
 
 # не нужные

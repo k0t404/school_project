@@ -26,10 +26,13 @@ def get_text_messages(message):
 
     # начало вывода расписания
     elif message.text == 'Расписание_уроков':
-        if authorized_user.about == 'ученик':
-            raspisanie(authorized_user.user_key, message, autharized_student=True)
+        if authorized_user:
+            if authorized_user.about == 'ученик':
+                raspisanie(authorized_user.user_key, message, autharized_student=True)
+            else:
+                qu1(message)
         else:
-            qu1(message)
+            bot.send_message(message.from_user.id, "Вы не авторизованы.")
 
     # вывод расписания на сегодняшний день
     elif message.text.split()[0] == 'Расписание':
