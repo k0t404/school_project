@@ -64,7 +64,12 @@ def raspisanie(clas, message, autharized_student=False):
         db_sess = db_session.create_session()
         lessons = []
         for row in db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date):
-            lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
+            lesson = []
+            for low in db_sess.query(Changes).filter(Changes.day == row.day, Changes.lesson_pos == row.lesson_pos):
+                if low:
+                    lesson = [low.lesson_pos, low.lesson, low.cabinet, low.class_letter, low.day]
+                else:
+                    lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
             lessons.append(lesson)
         if lessons:
             bot.send_message(message.from_user.id, f'Расписание для {clas}',
@@ -114,8 +119,10 @@ def poisk(clas, message):
             elif str(datetime.time.hour) >= 14 and str(datetime.time.minute) >= 15 and str(datetime.time.hour) <= 15 and str(datetime.time.minute) <= 15:
                 lesson_pos = 7
             lesson = db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date, Lesssons.lesson_pos == lesson_pos)
-
-            if lesson:
+            row = db_sess.query(Changes).filter(Changes.day == date, Changes.lesson_pos == lesson_pos, Changes.class_letter == clas)
+            if row:
+                bot.send_message(message.from_user.id, f'{clas} находиться в {row.cabinet} кабинете')
+            elif lesson:
                 bot.send_message(message.from_user.id, f'{clas} находиться в {lesson.cabinet} кабинете')
             else:
                 bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова',
