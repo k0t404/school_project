@@ -67,12 +67,11 @@ def raspisanie(message, clas=None, autharized_student=False):
     else:
         clas = f'{clas[0]} "{clas[1]}" класс'
 
-    if datetime.datetime.today().weekday() > 4 and datetime.datetime.today().weekday() == 40:
+    if datetime.datetime.today().weekday() > 4:
         bot.send_message(message.from_user.id, 'Бот отказывается работать в выходные. Иди к МЭШ-у',
                          reply_markup=start_keyboard(message.from_user.id))
     else:
-        date = days[0]
-        '''date = days[datetime.datetime.today().weekday()]'''
+        date = days[datetime.datetime.today().weekday()]
         db_sess = db_session.create_session()
         lessons = []
         for row in db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date):
@@ -86,7 +85,7 @@ def raspisanie(message, clas=None, autharized_student=False):
                     bot.send_message(message.from_user.id, '       '.join(row),
                                      reply_markup=start_keyboard(message.from_user.id))
         else:
-            qu1_2 = bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова',
+            bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова',
                              reply_markup=start_keyboard(message.from_user.id))
 
 
