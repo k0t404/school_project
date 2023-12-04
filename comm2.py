@@ -71,11 +71,16 @@ def raspisanie(message, clas=None, autharized_student=False):
         date = days[datetime.datetime.today().weekday()]
         db_sess = db_session.create_session()
         lessons = []
-        changes_made = db_sess.query(Changes).filter(Changes.class_letter == clas, Changes.day == date).first()
+        changes_made = db_sess.query(Changes).filter(Changes.class_letter == clas, Changes.day == date)
+        all_changes = {}
+        for change in changes_made:
+            all_changes[change.lesson_pos] = change
         for row in db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date):
             lesson = []
-            if changes_made.lesson_pos == row.lesson_pos:
-                lesson = [changes_made.lesson_pos, changes_made.lesson, changes_made.cabinet, changes_made.class_letter, changes_made.day]
+            if row.lesson_pos in all_changes.keys():
+                lesson = [all_changes[row.lesson_pos].lesson_pos, all_changes[row.lesson_pos].lesson,
+                          all_changes[row.lesson_pos].cabinet, all_changes[row.lesson_pos].class_letter,
+                          all_changes[row.lesson_pos].day]
             else:
                 lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
             lessons.append(lesson)
@@ -161,8 +166,8 @@ def authorization(message):
 
 
 def prep_ismeneniya(message):
-    clas, number, cabinet, lesson = message.text.split()
-    ismeneniya(message, clas, number, cabinet, lesson)
+    clas, number, cabinet, *lesson = message.text.split()
+    ismeneniya(message, clas, number, cabinet, ' '.join(lesson))
 
 
 def ismeneniya(message, clas, number, cabinet, lesson):
