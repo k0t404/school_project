@@ -71,13 +71,13 @@ def raspisanie(message, clas=None, autharized_student=False):
         date = days[datetime.datetime.today().weekday()]
         db_sess = db_session.create_session()
         lessons = []
+        changes_made = db_sess.query(Changes).filter(Changes.class_letter == clas, Changes.day == date).first()
         for row in db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date):
             lesson = []
-            for low in db_sess.query(Changes).filter(Changes.day == row.day, Changes.lesson_pos == row.lesson_pos):
-                if low:
-                    lesson = [low.lesson_pos, low.lesson, low.cabinet, low.class_letter, low.day]
-                else:
-                    lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
+            if changes_made.lesson_pos == row.lesson_pos:
+                lesson = [changes_made.lesson_pos, changes_made.lesson, changes_made.cabinet, changes_made.class_letter, changes_made.day]
+            else:
+                lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
             lessons.append(lesson)
         if lessons:
             bot.send_message(message.from_user.id, f'Расписание для {clas}',
