@@ -86,7 +86,7 @@ def get_text_messages(message):
     # $$$$$$$$$$ поиск класса $$$$$$$$$$
     elif message.text == 'Поиск класса':
         poisk1 = bot.send_message(message.from_user.id, "Введите класс, который вам нужен")
-        bot.register_next_step_handler(poisk1, prep_poisk())
+        bot.register_next_step_handler(poisk1, prep_poisk)
 
     elif message.text.split()[0] == 'Поиск':
         clas = (message.text.split())[1:]

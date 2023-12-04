@@ -111,24 +111,31 @@ def poisk(clas, message):
         date = days[datetime.datetime.today().weekday()]
         clas = f'{clas[:2]} "{clas[-1]}" класс'
         print(clas)
-        if str(datetime.time.hour) >= 15 and str(datetime.time.minute) >= 15:
+        if str(datetime.time.hour) >= '15' and str(datetime.time.minute) >= '15':
             bot.send_message(message.from_user.id, 'Уроки уже закончились',
                              reply_markup=start_keyboard(message.from_user.id))
         else:
-            if str(datetime.time.hour) >= 8 and str(datetime.time.minute) >= 15 and str(datetime.time.hour) <= 9 and str(datetime.time.minute) <= 15:
-                lesson_pos = 1
-            elif str(datetime.time.hour) >= 9 and str(datetime.time.minute) >= 15 and str(datetime.time.hour) <= 10 and str(datetime.time.minute) <= 15:
-                lesson_pos = 2
-            elif str(datetime.time.hour) >= 10 and str(datetime.time.minute) >= 15 and str(datetime.time.hour) <= 11 and str(datetime.time.minute) <= 15:
-                lesson_pos = 3
-            elif str(datetime.time.hour) >= 11 and str(datetime.time.minute) >= 15 and str(datetime.time.hour) <= 12 and str(datetime.time.minute) <= 15:
-                lesson_pos = 4
-            elif str(datetime.time.hour) >= 12 and str(datetime.time.minute) >= 15 and str(datetime.time.hour) <= 13 and str(datetime.time.minute) <= 15:
-                lesson_pos = 5
-            elif str(datetime.time.hour) >= 13 and str(datetime.time.minute) >= 15 and str(datetime.time.hour) <= 14 and str(datetime.time.minute) <= 15:
-                lesson_pos = 6
-            elif str(datetime.time.hour) >= 14 and str(datetime.time.minute) >= 15 and str(datetime.time.hour) <= 15 and str(datetime.time.minute) <= 15:
-                lesson_pos = 7
+            if str(datetime.time.hour) >= '8' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '9'\
+                    and str(datetime.time.minute) <= '15':
+                lesson_pos = '1'
+            elif str(datetime.time.hour) >= '9' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '10'\
+                    and str(datetime.time.minute) <= '15':
+                lesson_pos = '2'
+            elif str(datetime.time.hour) >= '10' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '11'\
+                    and str(datetime.time.minute) <= '15':
+                lesson_pos = '3'
+            elif str(datetime.time.hour) >= '11' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '12'\
+                    and str(datetime.time.minute) <= '15':
+                lesson_pos = '4'
+            elif str(datetime.time.hour) >= '12' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '13'\
+                    and str(datetime.time.minute) <= '15':
+                lesson_pos = '5'
+            elif str(datetime.time.hour) >= '13' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '14'\
+                    and str(datetime.time.minute) <= '15':
+                lesson_pos = '6'
+            elif str(datetime.time.hour) >= '14' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '15'\
+                    and str(datetime.time.minute) <= '15':
+                lesson_pos = '7'
             lesson = db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date, Lesssons.lesson_pos == lesson_pos)
             row = db_sess.query(Changes).filter(Changes.day == date, Changes.lesson_pos == lesson_pos, Changes.class_letter == clas)
             if row:

@@ -13,7 +13,7 @@ def export_to_sqlite(grade, file_name):
     # Читаем файл и лист1 книги excel
     file_to_read = openpyxl.load_workbook(f'{file_name}.xlsx', data_only=True)
     sheet = file_to_read[f'{int(grade)} класс']
-    # Циxкл по строкам
+    # Цикл по строкам
     classes = [sheet.cell(1, col).value for col in range(1, sheet.max_column + 1) if sheet.cell(1, col).value]
     day = None
     # Цикл по строчкам
