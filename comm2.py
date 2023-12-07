@@ -11,26 +11,41 @@ from data.keys import Keys
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
-def start_keyboard(user_id):
-    '''db_sess = db_session.create_session()
-    authorized_user = db_sess.query(User).filter(User.user_id == user_id)'''
+def start_keyboard(user_pass):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)  # создание новых кнопок
-    btn1 = types.KeyboardButton('Что может бот?')
-    btn2 = types.KeyboardButton('Расписание_уроков')
-    btn3 = types.KeyboardButton('Внести изменения')
-    btn4 = types.KeyboardButton('Авторизоваться')
-    btn5 = types.KeyboardButton('Задать вопрос')
-    btn6 = types.KeyboardButton('Поиск класса')
-    markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
+    if user_pass == 'завуч':
+        btn1 = types.KeyboardButton('Что может бот?')
+        btn2 = types.KeyboardButton('Расписание (сегодняшний день)')
+        btn3 = types.KeyboardButton('Внести изменения')
+        btn4 = types.KeyboardButton('Отправить сообщение классу')
+        btn5 = types.KeyboardButton('Задать вопрос')
+        btn6 = types.KeyboardButton('Поиск класса')
+        btn7 = types.KeyboardButton('Расписание (на выбранный день)')
+        markup.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7)
+    elif user_pass == 'учитель':
+        btn1 = types.KeyboardButton('Что может бот?')
+        btn2 = types.KeyboardButton('Расписание (сегодняшний день)')
+        btn3 = types.KeyboardButton('Отправить сообщение классу')
+        btn4 = types.KeyboardButton('Задать вопрос')
+        btn5 = types.KeyboardButton('Поиск класса')
+        btn6 = types.KeyboardButton('Расписание (на выбранный день)')
+        markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
+    elif user_pass == 'ученик':
+        btn1 = types.KeyboardButton('Что может бот?')
+        btn2 = types.KeyboardButton('Расписание (сегодняшний день)')
+        btn3 = types.KeyboardButton('Задать вопрос')
+        btn4 = types.KeyboardButton('Поиск класса')
+        btn5 = types.KeyboardButton('Расписание (на выбранный день)')
+        markup.add(btn1, btn2, btn3, btn4, btn5)
     return markup
 
 
 def starts(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("👋 Поздороваться")
+    btn1 = types.KeyboardButton("Авторизоваться")
     markup.add(btn1)
-    bot.send_message(message.from_user.id, "👋 Привет! Я бот Артем, и я помогу тебе в расписании!",
-                     reply_markup=start_keyboard(message.from_user.id))
+    bot.send_message(message.from_user.id, "👋 Привет! Я бот Артем, и я помогу тебе с расписанием!",
+                     reply_markup=markup)
 
 
 def search(message):
@@ -94,6 +109,47 @@ def raspisanie(message, clas=None, autharized_student=False):
         else:
             bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова',
                              reply_markup=start_keyboard(message.from_user.id))
+
+
+def prep_raspisanie_control(message):
+    days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
+    date = message.text.upper().split()[0]
+    if date not in days:
+        bot.send_message(message.from_user.id, 'неверно введен день недели. Повторите процесс заново',
+                         reply_markup=start_keyboard(message.from_user.id))
+    clas = ''.join(message.text.upper().split()[1:])
+    clas = [clas[:-1], clas[-1]]
+    raspisanie_control(message, clas, date)
+
+
+def raspisanie_control(message, clas, date):
+    clas = f'{clas[0]} "{clas[1].capitalize()}" класс'
+
+    db_sess = db_session.create_session()
+    lessons = []
+    changes_made = db_sess.query(Changes).filter(Changes.class_letter == clas, Changes.day == date)
+    all_changes = {}
+    for change in changes_made:
+        all_changes[change.lesson_pos] = change
+    for row in db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date):
+        lesson = []
+        if row.lesson_pos in all_changes.keys():
+            lesson = [all_changes[row.lesson_pos].lesson_pos, all_changes[row.lesson_pos].lesson,
+                      all_changes[row.lesson_pos].cabinet, all_changes[row.lesson_pos].class_letter,
+                      all_changes[row.lesson_pos].day]
+        else:
+            lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
+        lessons.append(lesson)
+    if lessons:
+        bot.send_message(message.from_user.id, f'Расписание для {clas}',
+                         reply_markup=start_keyboard(message.from_user.id))
+        for row in lessons:
+            if None not in row:
+                bot.send_message(message.from_user.id, '       '.join(row),
+                                 reply_markup=start_keyboard(message.from_user.id))
+    else:
+        bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова',
+                         reply_markup=start_keyboard(message.from_user.id))
 
 
 def prep_poisk(message):
@@ -166,10 +222,14 @@ def authorization(message):
     elif len(clas) == 2:
         user.about = 'ученик'
         user.user_key = f'{clas[0]} "{clas[1]}" класс'
-        print(f'{message.text[0]} "{message.text[1]}" класс')
-    db_sess.add(user)
-    db_sess.commit()
-    bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(message.from_user.id))
+        check = db_sess.query(Lesssons).filter(Lesssons.class_letter == user.user_key)
+    if check:
+        db_sess.add(user)
+        db_sess.commit()
+        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(message.from_user.id))
+    else:
+        bot.send_message(message.from_user.id, 'Указан неверный класс', reply_markup=start_keyboard(message.from_user.id))
+        starts(message)
 
 
 def prep_ismeneniya(message):
@@ -184,7 +244,7 @@ def ismeneniya(message, clas, number, cabinet, lesson):
                          reply_markup=start_keyboard(message.from_user.id))
     else:
         date = days[datetime.datetime.today().weekday()]
-        clas = f'{clas[:-1]} "{clas[-1]}" класс'
+        clas = f'{clas[:-1]} "{clas[-1].upper()}" класс'
         print(clas)
         db_sess = db_session.create_session()
         items = Changes()
@@ -214,7 +274,7 @@ def ismeneniya(message, clas, number, cabinet, lesson):
 def announce(message):
     db_sess = db_session.create_session()
     clas = message.text.split()[0]
-    clas = f'{clas[:-1]} "{clas[-1]}" класс'
+    clas = f'{clas[:-1]} "{clas[-1].upper()}" класс'
     things_to_announce = ' '.join(message.text.split()[1:])
     students = db_sess.query(User).filter(User.user_key == clas)
     for student in students:
@@ -222,10 +282,6 @@ def announce(message):
                          reply_markup=start_keyboard(message.from_user.id))
     bot.send_message(message.from_user.id, 'Сообщение отправлено',
                      reply_markup=start_keyboard(message.from_user.id))
-
-
-def search_for(message):
-    pass
 
 
 # не нужные
