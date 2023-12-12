@@ -128,13 +128,12 @@ def raspisanie_control(message, clas, date):
         lesson = []
         if row.lesson_pos in all_changes.keys():
             lesson = [all_changes[row.lesson_pos].lesson_pos, all_changes[row.lesson_pos].lesson,
-                      all_changes[row.lesson_pos].cabinet, all_changes[row.lesson_pos].class_letter,
-                      all_changes[row.lesson_pos].day]
+                      all_changes[row.lesson_pos].cabinet]
         else:
-            lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
+            lesson = [row.lesson_pos, row.lesson, row.cabinet]
         lessons.append(lesson)
     if lessons:
-        bot.send_message(message.from_user.id, f'Расписание для {clas}')
+        bot.send_message(message.from_user.id, f'Расписание для {clas} на {date.lower()}')
         for row in lessons:
             if None not in row:
                 bot.send_message(message.from_user.id, '       '.join(row))
@@ -212,9 +211,10 @@ def authorization(message):
         check = False
     if check:
         usero = user.about
+        print()
         db_sess.add(user)
         db_sess.commit()
-        bot.send_message(message.from_user.id, 'готово')
+        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(usero))
     else:
         bot.send_message(message.from_user.id, 'Что-то пошло не так')
         starts(message)
