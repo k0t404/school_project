@@ -75,15 +75,18 @@ def get_text_messages(message):
             bot.send_message(message.from_user.id, "Вы уже авторизованы")'''
 
     elif message.text.lower() == 'завуч':
-        qu3_1 = bot.send_message(message.from_user.id, "Введите специальный ключ")
+        qu3_1 = bot.send_message(message.from_user.id, "Введите специальный ключ",
+                                 reply_markup=start_keyboard(message.from_user.id))
         bot.register_next_step_handler(qu3_1, authorization)
 
     elif message.text.lower() == 'учитель':
-        qu3_2 = bot.send_message(message.from_user.id, "Введите специальный ключ")
+        qu3_2 = bot.send_message(message.from_user.id, "Введите специальный ключ",
+                                 reply_markup=start_keyboard(message.from_user.id))
         bot.register_next_step_handler(qu3_2, authorization)
 
     elif message.text.lower() == 'ученик':
-        qu3_3 = bot.send_message(message.from_user.id, "Введите номер и букву класса (именно в этом порядке)")
+        qu3_3 = bot.send_message(message.from_user.id, "Введите номер и букву класса (именно в этом порядке)",
+                                 reply_markup=start_keyboard(message.from_user.id))
         bot.register_next_step_handler(qu3_3, authorization)
     # ........ отправка сообщения классу .........
     elif message.text == 'Отправить сообщение классу':
