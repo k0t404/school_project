@@ -12,6 +12,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 
 def start_keyboard(user_pass):
+    ###### основная клавиатура ######
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)  # создание новых кнопок
     if user_pass == 'завуч':
         btn1 = types.KeyboardButton('Что может бот?')
@@ -41,6 +42,7 @@ def start_keyboard(user_pass):
 
 
 def starts(message):
+    ###### Начальное сообщение ######
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("Авторизоваться")
     markup.add(btn1)
@@ -49,15 +51,18 @@ def starts(message):
 
 
 def search(message):
+    ###### Выбор действия ######
     bot.send_message(message.from_user.id, 'Выберите действие', reply_markup=start_keyboard(message.from_user.id))
 
 
 def question(message):
+    ###### Задать вопрос ######
     bot.send_message(message.from_user.id, "Все вопросы можно писать на нашу почту")
     bot.send_message(message.from_user.id, "cot5626@mail.ru", reply_markup=start_keyboard(message.from_user.id))
 
 
 def helper(message):
+    ###### Помощь ######
     bot.send_message(message.from_user.id, "Я бот Артем.")
     bot.send_message(message.from_user.id, "Я могу:")
     bot.send_message(message.from_user.id, "Вывести расписание на сегодня")
@@ -72,6 +77,7 @@ def prep_raspisanie(message):
 
 
 def raspisanie(message, clas=None, autharized_student=False):
+    ###### Вывод расписания ######
     days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
 
     if autharized_student:
@@ -112,6 +118,7 @@ def raspisanie(message, clas=None, autharized_student=False):
 
 
 def prep_raspisanie_control(message):
+    ###### Проверка расписания ######
     days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
     date = message.text.upper().split()[0]
     if date not in days:
