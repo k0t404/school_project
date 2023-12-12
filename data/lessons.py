@@ -4,7 +4,7 @@ from flask_login import UserMixin
 from sqlalchemy_serializer import SerializerMixin
 
 
-class Lesssons(SqlAlchemyBase, UserMixin, SerializerMixin):
+class Lessons(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'timetable'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)

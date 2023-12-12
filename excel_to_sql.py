@@ -2,7 +2,7 @@ import os
 import sqlite3
 import openpyxl
 from data import db_session
-from data.lesssons import Lesssons
+from data.lessons import Lessons
 
 
 def export_to_sqlite(grade, file_name):

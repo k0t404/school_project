@@ -3,7 +3,7 @@ import datetime
 from con2 import BOT_TOKEN
 from telebot import types
 from data import db_session
-from data.lesssons import Lesssons
+from data.lessons import Lessons
 from data.users import User
 from data.changes import Changes
 from data.keys import Keys
@@ -20,7 +20,7 @@ def start_keyboard(user_pass):
         btn4 = types.KeyboardButton('Отправить сообщение классу')
         btn5 = types.KeyboardButton('Задать вопрос')
         btn6 = types.KeyboardButton('Поиск класса')
-        btn7 = types.KeyboardButton('Расписание (на выбранный день)')
+        btn7 = types.KeyboardButton('Расписание (выбранный день)')
         markup.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7)
     elif user_pass == 'учитель':
         btn1 = types.KeyboardButton('Что может бот?')
@@ -28,14 +28,14 @@ def start_keyboard(user_pass):
         btn3 = types.KeyboardButton('Отправить сообщение классу')
         btn4 = types.KeyboardButton('Задать вопрос')
         btn5 = types.KeyboardButton('Поиск класса')
-        btn6 = types.KeyboardButton('Расписание (на выбранный день)')
+        btn6 = types.KeyboardButton('Расписание (выбранный день)')
         markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
     elif user_pass == 'ученик':
         btn1 = types.KeyboardButton('Что может бот?')
         btn2 = types.KeyboardButton('Расписание (сегодняшний день)')
         btn3 = types.KeyboardButton('Задать вопрос')
         btn4 = types.KeyboardButton('Поиск класса')
-        btn5 = types.KeyboardButton('Расписание (на выбранный день)')
+        btn5 = types.KeyboardButton('Расписание (выбранный день)')
         markup.add(btn1, btn2, btn3, btn4, btn5)
     return markup
 
@@ -53,7 +53,8 @@ def search(message):
 
 
 def question(message):
-    bot.send_message(message.from_user.id, "Все вопросы можно писать на нашу почту")
+    bot.send_message(message.from_user.id, "Все вопросы можно писать на нашу почту",
+                     reply_markup=start_keyboard(message.from_user.id))
     bot.send_message(message.from_user.id, "cot5626@mail.ru", reply_markup=start_keyboard(message.from_user.id))
 
 
@@ -90,7 +91,7 @@ def raspisanie(message, clas=None, autharized_student=False):
         all_changes = {}
         for change in changes_made:
             all_changes[change.lesson_pos] = change
-        for row in db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date):
+        for row in db_sess.query(Lessons).filter(Lessons.class_letter == clas, Lessons.day == date):
             lesson = []
             if row.lesson_pos in all_changes.keys():
                 lesson = [all_changes[row.lesson_pos].lesson_pos, all_changes[row.lesson_pos].lesson,
@@ -131,7 +132,7 @@ def raspisanie_control(message, clas, date):
     all_changes = {}
     for change in changes_made:
         all_changes[change.lesson_pos] = change
-    for row in db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date):
+    for row in db_sess.query(Lessons).filter(Lessons.class_letter == clas, Lessons.day == date):
         lesson = []
         if row.lesson_pos in all_changes.keys():
             lesson = [all_changes[row.lesson_pos].lesson_pos, all_changes[row.lesson_pos].lesson,
@@ -192,7 +193,7 @@ def poisk(clas, message):
             elif str(datetime.time.hour) >= '14' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '15'\
                     and str(datetime.time.minute) <= '15':
                 lesson_pos = '7'
-            lesson = db_sess.query(Lesssons).filter(Lesssons.class_letter == clas, Lesssons.day == date, Lesssons.lesson_pos == lesson_pos)
+            lesson = db_sess.query(Lessons).filter(Lessons.class_letter == clas, Lessons.day == date, Lessons.lesson_pos == lesson_pos)
             row = db_sess.query(Changes).filter(Changes.day == date, Changes.lesson_pos == lesson_pos, Changes.class_letter == clas)
             if row:
                 bot.send_message(message.from_user.id, f'{clas} находиться в {row.cabinet} кабинете')
@@ -208,27 +209,27 @@ def authorization(message):
     user = User()
     user.user_id = message.from_user.id
     key = db_sess.query(Keys).filter(Keys.key_available == message.text)
-    special_pass = False
-    if key:
-        special_pass = True
     clas = ''.join(message.text.upper().split())
     clas = [clas[:-1], clas[-1]]
-    if special_pass and len(message.text) == 9:
+    class_student = db_sess.query(Lessons).filter(Lessons.class_letter == f'{clas[0]} "{clas[1]}" класс')
+    check = True
+    if key and len(message.text) == 9:
         user.about = 'завуч'
         user.user_key = message.text
-    elif special_pass and len(message.text) == 7:
+    elif key and len(message.text) == 7:
         user.about = 'учитель'
         user.user_key = message.text
-    elif len(clas) == 2:
+    elif class_student and len(clas) == 2:
         user.about = 'ученик'
         user.user_key = f'{clas[0]} "{clas[1]}" класс'
-        check = db_sess.query(Lesssons).filter(Lesssons.class_letter == user.user_key)
+    else:
+        check = False
     if check:
         db_sess.add(user)
         db_sess.commit()
         bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(message.from_user.id))
     else:
-        bot.send_message(message.from_user.id, 'Указан неверный класс', reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, 'Что-то пошло не так', reply_markup=start_keyboard(message.from_user.id))
         starts(message)
 
 
