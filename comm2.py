@@ -49,21 +49,19 @@ def starts(message):
 
 
 def search(message):
-    bot.send_message(message.from_user.id, 'Выберите действие', reply_markup=start_keyboard(message.from_user.id))
+    bot.send_message(message.from_user.id, 'Выберите действие')
 
 
 def question(message):
-    bot.send_message(message.from_user.id, "Все вопросы можно писать на нашу почту",
-                     reply_markup=start_keyboard(message.from_user.id))
-    bot.send_message(message.from_user.id, "cot5626@mail.ru", reply_markup=start_keyboard(message.from_user.id))
+    bot.send_message(message.from_user.id, "Все вопросы можно писать на нашу почту")
+    bot.send_message(message.from_user.id, "cot5626@mail.ru")
 
 
 def helper(message):
     bot.send_message(message.from_user.id, "Я бот Артем.")
     bot.send_message(message.from_user.id, "Я могу:")
     bot.send_message(message.from_user.id, "Вывести расписание на сегодня")
-    bot.send_message(message.from_user.id, "Внести изменения в рассписание класса",
-                     reply_markup=start_keyboard(message.from_user.id))
+    bot.send_message(message.from_user.id, "Внести изменения в рассписание класса")
 
 
 def prep_raspisanie(message):
@@ -81,8 +79,7 @@ def raspisanie(message, clas=None, autharized_student=False):
         clas = f'{clas[0]} "{clas[1].capitalize()}" класс'
 
     if datetime.datetime.today().weekday() > 4:
-        bot.send_message(message.from_user.id, 'Бот отказывается работать в выходные. Иди к МЭШ-у',
-                         reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, 'Бот отказывается работать в выходные. Иди к МЭШ-у')
     else:
         date = days[datetime.datetime.today().weekday()]
         db_sess = db_session.create_session()
@@ -101,23 +98,19 @@ def raspisanie(message, clas=None, autharized_student=False):
                 lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
             lessons.append(lesson)
         if lessons:
-            bot.send_message(message.from_user.id, f'Расписание для {clas}',
-                             reply_markup=start_keyboard(message.from_user.id))
+            bot.send_message(message.from_user.id, f'Расписание для {clas}')
             for row in lessons:
                 if None not in row:
-                    bot.send_message(message.from_user.id, '       '.join(row),
-                                     reply_markup=start_keyboard(message.from_user.id))
+                    bot.send_message(message.from_user.id, '       '.join(row))
         else:
-            bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова',
-                             reply_markup=start_keyboard(message.from_user.id))
+            bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова')
 
 
 def prep_raspisanie_control(message):
     days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
     date = message.text.upper().split()[0]
     if date not in days:
-        bot.send_message(message.from_user.id, 'неверно введен день недели. Повторите процесс заново',
-                         reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, 'неверно введен день недели. Повторите процесс заново')
     clas = ''.join(message.text.upper().split()[1:])
     clas = [clas[:-1], clas[-1]]
     raspisanie_control(message, clas, date)
@@ -142,15 +135,12 @@ def raspisanie_control(message, clas, date):
             lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
         lessons.append(lesson)
     if lessons:
-        bot.send_message(message.from_user.id, f'Расписание для {clas}',
-                         reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, f'Расписание для {clas}')
         for row in lessons:
             if None not in row:
-                bot.send_message(message.from_user.id, '       '.join(row),
-                                 reply_markup=start_keyboard(message.from_user.id))
+                bot.send_message(message.from_user.id, '       '.join(row))
     else:
-        bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова',
-                         reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова')
 
 
 def prep_poisk(message):
@@ -162,15 +152,13 @@ def poisk(clas, message):
     db_sess = db_session.create_session()
     days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
     if datetime.datetime.today().weekday() > 4:
-        bot.send_message(message.from_user.id, 'В выходные невозможно найти класс',
-                         reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, 'В выходные невозможно найти класс')
     else:
         date = days[datetime.datetime.today().weekday()]
         clas = f'{clas[:2]} "{clas[-1]}" класс'
         print(clas)
         if str(datetime.time.hour) >= '15' and str(datetime.time.minute) >= '15':
-            bot.send_message(message.from_user.id, 'Уроки уже закончились',
-                             reply_markup=start_keyboard(message.from_user.id))
+            bot.send_message(message.from_user.id, 'Уроки уже закончились')
         else:
             if str(datetime.time.hour) >= '8' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '9'\
                     and str(datetime.time.minute) <= '15':
