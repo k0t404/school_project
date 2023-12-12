@@ -92,13 +92,12 @@ def raspisanie(message, clas=None, autharized_student=False):
             lesson = []
             if row.lesson_pos in all_changes.keys():
                 lesson = [all_changes[row.lesson_pos].lesson_pos, all_changes[row.lesson_pos].lesson,
-                          all_changes[row.lesson_pos].cabinet, all_changes[row.lesson_pos].class_letter,
-                          all_changes[row.lesson_pos].day]
+                          all_changes[row.lesson_pos].cabinet]
             else:
-                lesson = [row.lesson_pos, row.lesson, row.cabinet, row.class_letter, row.day]
+                lesson = [row.lesson_pos, row.lesson, row.cabinet]
             lessons.append(lesson)
         if lessons:
-            bot.send_message(message.from_user.id, f'Расписание для {clas}')
+            bot.send_message(message.from_user.id, f'Расписание для {clas} на {date.lower()}')
             for row in lessons:
                 if None not in row:
                     bot.send_message(message.from_user.id, '       '.join(row))
@@ -188,8 +187,7 @@ def poisk(clas, message):
             elif lesson:
                 bot.send_message(message.from_user.id, f'{clas} находиться в {lesson.cabinet} кабинете')
             else:
-                bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова',
-                                 reply_markup=start_keyboard(message.from_user.id))
+                bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова')
 
 
 def authorization(message):
@@ -216,9 +214,9 @@ def authorization(message):
         usero = user.about
         db_sess.add(user)
         db_sess.commit()
-        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(usero))
+        bot.send_message(message.from_user.id, 'готово')
     else:
-        bot.send_message(message.from_user.id, 'Что-то пошло не так', reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, 'Что-то пошло не так')
         starts(message)
 
 
@@ -230,8 +228,7 @@ def prep_ismeneniya(message):
 def ismeneniya(message, clas, number, cabinet, lesson):
     days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
     if datetime.datetime.today().weekday() > 4:
-        bot.send_message(message.from_user.id, 'В выходные невозможно вносить изменения',
-                         reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, 'В выходные невозможно вносить изменения')
     else:
         date = days[datetime.datetime.today().weekday()]
         clas = f'{clas[:-1]} "{clas[-1].upper()}" класс'
@@ -248,15 +245,12 @@ def ismeneniya(message, clas, number, cabinet, lesson):
         db_sess.commit()
         title = db_sess.query(Changes).filter(Changes.lesson == lesson, Changes.day == date).first()
         if title:
-            bot.send_message(message.from_user.id, 'Изменение было успешно сохраненно',
-                             reply_markup=start_keyboard(message.from_user.id))
+            bot.send_message(message.from_user.id, 'Изменение было успешно сохраненно')
         else:
-            bot.send_message(message.from_user.id, 'Не удалось внести изменение, попробуйте ещё раз',
-                             reply_markup=start_keyboard(message.from_user.id))
+            bot.send_message(message.from_user.id, 'Не удалось внести изменение, попробуйте ещё раз')
         users = db_sess.query(User).filter(User.about == clas)
         for user in users:
-            bot.send_message(user.user_id, f'Ваше расписание на {date} изменилось! Изменен {number} урок',
-                             reply_markup=start_keyboard(message.from_user.id))
+            bot.send_message(user.user_id, f'Ваше расписание на {date} изменилось! Изменен {number} урок')
         bot.send_message(message.from_user.id, 'Ученики были уведомлены об изменениях',
                          reply_markup=start_keyboard(message.from_user.id))
 
