@@ -213,9 +213,10 @@ def authorization(message):
     else:
         check = False
     if check:
+        usero = user.about
         db_sess.add(user)
         db_sess.commit()
-        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(usero))
     else:
         bot.send_message(message.from_user.id, 'Что-то пошло не так', reply_markup=start_keyboard(message.from_user.id))
         starts(message)
