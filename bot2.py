@@ -112,7 +112,7 @@ def get_text_messages(message):
     # \\\\\\\\\\ просто, чтобы было \\\\\\\\\\\
     else:
         print(message.text.split())
-        bot.send_message(message.from_user.id, "Используйте клавиатуру")
+        bot.send_message(message.from_user.id, "Воспользуйтесь доступными функциями бота")
 
 
 bot.infinity_polling()   # обязательная для работы бота часть

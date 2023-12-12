@@ -11,6 +11,11 @@ from data.keys import Keys
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
+def unpack(swl_thing):
+    info = []
+    for row in swl_thing:
+        info.append(row)
+    return info
 def start_keyboard(user_pass):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)  # создание новых кнопок
     if user_pass == 'завуч':
@@ -45,6 +50,14 @@ def starts(message):
     btn1 = types.KeyboardButton("Авторизоваться")
     markup.add(btn1)
     bot.send_message(message.from_user.id, "👋 Привет! Я бот Артем, и я помогу тебе с расписанием!",
+                     reply_markup=markup)
+
+
+def redo(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("Авторизоваться")
+    markup.add(btn1)
+    bot.send_message(message.from_user.id, "Давай по новой",
                      reply_markup=markup)
 
 
@@ -198,26 +211,28 @@ def authorization(message):
     clas = [clas[:-1], clas[-1]]
     class_student = db_sess.query(Lessons).filter(Lessons.class_letter == f'{clas[0]} "{clas[1]}" класс')
     check = True
-    if key and len(message.text) == 9:
+    print(unpack(key), unpack(class_student), message.text)
+    if unpack(key) and len(message.text) == 9:
         user.about = 'завуч'
         user.user_key = message.text
-    elif key and len(message.text) == 7:
+    elif unpack(key) and len(message.text) == 7:
         user.about = 'учитель'
         user.user_key = message.text
-    elif class_student and len(clas) == 2:
+    elif unpack(class_student) and len(clas) == 2:
         user.about = 'ученик'
         user.user_key = f'{clas[0]} "{clas[1]}" класс'
     else:
         check = False
     if check:
         usero = user.about
-        print()
+        print(1)
         db_sess.add(user)
         db_sess.commit()
         bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(usero))
     else:
+        print(2)
         bot.send_message(message.from_user.id, 'Что-то пошло не так')
-        starts(message)
+        redo(message)
 
 
 def prep_ismeneniya(message):
