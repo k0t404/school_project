@@ -20,28 +20,25 @@ def start_keyboard(user_pass):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)  # создание новых кнопок
     if user_pass == 'завуч':
         btn1 = types.KeyboardButton('Что может бот?')
-        btn2 = types.KeyboardButton('Расписание (сегодняшний день)')
+        btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Внести изменения')
         btn4 = types.KeyboardButton('Отправить сообщение классу')
         btn5 = types.KeyboardButton('Задать вопрос')
         btn6 = types.KeyboardButton('Поиск класса')
-        btn7 = types.KeyboardButton('Расписание (выбранный день)')
-        markup.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7)
+        markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
     elif user_pass == 'учитель':
         btn1 = types.KeyboardButton('Что может бот?')
-        btn2 = types.KeyboardButton('Расписание (сегодняшний день)')
+        btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Отправить сообщение классу')
         btn4 = types.KeyboardButton('Задать вопрос')
         btn5 = types.KeyboardButton('Поиск класса')
-        btn6 = types.KeyboardButton('Расписание (выбранный день)')
-        markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
+        markup.add(btn1, btn2, btn3, btn4, btn5)
     elif user_pass == 'ученик':
         btn1 = types.KeyboardButton('Что может бот?')
-        btn2 = types.KeyboardButton('Расписание (сегодняшний день)')
+        btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Задать вопрос')
         btn4 = types.KeyboardButton('Поиск класса')
-        btn5 = types.KeyboardButton('Расписание (выбранный день)')
-        markup.add(btn1, btn2, btn3, btn4, btn5)
+        markup.add(btn1, btn2, btn3, btn4)
     return markup
 
 
@@ -86,6 +83,10 @@ def prep_raspisanie(message):
 def raspisanie(message, clas=None, autharized_student=False):
     days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
 
+    db_sess = db_session.create_session()
+    user_back = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
+    print(user_back.about)
+
     if autharized_student:
         clas = clas
     else:
@@ -110,7 +111,8 @@ def raspisanie(message, clas=None, autharized_student=False):
                 lesson = [row.lesson_pos, row.lesson, row.cabinet]
             lessons.append(lesson)
         if lessons:
-            bot.send_message(message.from_user.id, f'Расписание для {clas} на {date.lower()}')
+            bot.send_message(message.from_user.id, f'Расписание для {clas} на {date.lower()}',
+                             reply_markup=start_keyboard(user_back.about))
             for row in lessons:
                 if None not in row:
                     bot.send_message(message.from_user.id, '       '.join(row))
@@ -135,6 +137,9 @@ def raspisanie_control(message, clas, date):
     lessons = []
     changes_made = db_sess.query(Changes).filter(Changes.class_letter == clas, Changes.day == date)
     all_changes = {}
+
+    user_back = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
+    print(user_back.about)
     for change in changes_made:
         all_changes[change.lesson_pos] = change
     for row in db_sess.query(Lessons).filter(Lessons.class_letter == clas, Lessons.day == date):
@@ -146,7 +151,8 @@ def raspisanie_control(message, clas, date):
             lesson = [row.lesson_pos, row.lesson, row.cabinet]
         lessons.append(lesson)
     if lessons:
-        bot.send_message(message.from_user.id, f'Расписание для {clas} на {date.lower()}')
+        bot.send_message(message.from_user.id, f'Расписание для {clas} на {date.lower()}',
+                         reply_markup=start_keyboard(user_back.about))
         for row in lessons:
             if None not in row:
                 bot.send_message(message.from_user.id, '       '.join(row))

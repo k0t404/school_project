@@ -40,31 +40,28 @@ def get_text_messages(message):
         qu = bot.send_message(message.from_user.id, 'Введите класс (слитно) и сообщение, которое хотите отправить')
         bot.register_next_step_handler(qu, announce)
     # !!!!!!!!!! вывод расписания !!!!!!!!!!!
-    # вывод расписания на сегодняшний день
-    elif message.text == 'Расписание (сегодняшний день)':
-        if authorized_user and authorized_user.about.lower() == 'ученик':
-            print(1)
+    elif message.text == 'Расписание':
+        markup_time = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn1 = types.KeyboardButton("Сегодняшний день")
+        btn2 = types.KeyboardButton("Определенный день")
+        markup_time.add(btn1, btn2)
+        bot.send_message(message.from_user.id, 'Чего именно вы хотите?', reply_markup=markup_time)
+    # 11111111111 вывод расписания на сегодняшний день 222222222222
+    elif message.text == 'Сегодняшний день':
+        if authorized_user.about.lower() == 'ученик':
             raspisanie(message, authorized_user.user_key, autharized_student=True)
-        elif not authorized_user:
-            bot.send_message(message.from_user.id, "Пожалуйста, авторизуйтесь.")
-            starts(message)
         else:
             qu1 = bot.send_message(message.from_user.id, "Введите ваш класс (номер и букву)")
             bot.register_next_step_handler(qu1, prep_raspisanie)
-    # @!@!@!@!@ вывод расписания на определенный @!@!@!@!@!@
-    # вывод расписания на сегодняшний день
-    elif message.text == 'Расписание (выбранный день)':
-        if not authorized_user:
-            bot.send_message(message.from_user.id, "Пожалуйста, авторизуйтесь.")
-            starts(message)
-        else:
-            qu1 = bot.send_message(message.from_user.id, "Введите день недели (например, понедельник и т.п.) и нужный вам класс (номер и букву)")
-            bot.register_next_step_handler(qu1, prep_raspisanie_control)
+    # @!@!@!@!@ вывод расписания на определенный день @!@!@!@!@!@
+    elif message.text == 'Определенный день':
+        qu1 = bot.send_message(message.from_user.id,
+                               "Введите день недели (например, понедельник и т.п.) и нужный вам класс (номер и букву)")
+        bot.register_next_step_handler(qu1, prep_raspisanie_control)
     # %%%%%%%%%% задавание вопросов №№№№№№№№№
     # отправляет почту, на которую будут отправлять вопросы
     elif message.text == 'Задать вопрос':
         question(message)
-
     # |||||||||| изменения расписания |||||||||||||
     elif message.text == 'Внести изменения':
         if authorized_user and authorized_user.about == 'завуч':
@@ -74,7 +71,16 @@ def get_text_messages(message):
         else:
             bot.send_message(message.from_user.id, "У вас нет прав для изменения расписания",
                              reply_markup=start_keyboard(authorized_user.about))
-
+    # ........ отправка сообщения классу .........
+    elif message.text == 'Отправить сообщение классу':
+        if authorized_user and authorized_user.about != 'ученик':
+            qu5 = bot.send_message(message.from_user.id,
+                                   "Введите номер и букву класса (через пробел) и сообщение, которое хотите передать")
+            bot.register_next_step_handler(qu5, announce)
+        elif authorized_user and authorized_user.about == 'ученик':
+            bot.send_message(message.from_user.id, "У вас нет доступа к данной функции")
+        else:
+            bot.send_message(message.from_user.id, "Вы не авторизованы.")
     # //////// авторизация /////////
     # начало всей авторизации
     elif message.text == 'Авторизоваться':
@@ -100,18 +106,6 @@ def get_text_messages(message):
     elif message.text.lower() == 'ученик':
         qu3_3 = bot.send_message(message.from_user.id, "Введите номер и букву класса (именно в этом порядке)")
         bot.register_next_step_handler(qu3_3, authorization)
-    # ........ отправка сообщения классу .........
-    elif message.text == 'Отправить сообщение классу':
-        if authorized_user and authorized_user.about != 'ученик':
-            qu5 = bot.send_message(message.from_user.id,
-                                   "Введите номер и букву класса (через пробел) и сообщение, которое хотите передать")
-            bot.register_next_step_handler(qu5, announce)
-
-        elif authorized_user and authorized_user.about == 'ученик':
-            bot.send_message(message.from_user.id, "У вас нет доступа к данной функции")
-
-        else:
-            bot.send_message(message.from_user.id, "Вы не авторизованы.")
     # ?????????? функции бота ???????????
     # вывод функций бота, наверное
     elif message.text == 'Что может бот?':
