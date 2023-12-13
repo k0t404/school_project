@@ -142,7 +142,7 @@ def raspisanie_control(message, clas, date):
     print(user_back.about)
     for change in changes_made:
         all_changes[change.lesson_pos] = change
-    for row in db_sess.query(Lessons).filter(Lessons.class_letter == clas, Lessons.day == date):
+    for row in db_sess.query(Lessons).filter(Lessons.class_letter == clas, Lessons.day == date).distinct():
         lesson = []
         if row.lesson_pos in all_changes.keys():
             lesson = [all_changes[row.lesson_pos].lesson_pos, all_changes[row.lesson_pos].lesson,

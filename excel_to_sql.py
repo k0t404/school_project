@@ -37,7 +37,7 @@ def export_to_sqlite(grade, file_name):
                 count_columns = 0
                 data.append(day)
                 # Вставка данных в поля таблицы
-                lessons = Lesssons()
+                lessons = Lessons()
                 lessons.lesson_pos = data[0]
                 lessons.lesson = data[1]
                 lessons.cabinet = data[2]
@@ -76,6 +76,3 @@ def process_control(*grade_start_end, file_name, wreck_apart=False):
         grade_start, grade_end = grade_start_end[0]
         for grade in range(int(grade_start), int(grade_end) + 1):
             export_to_sqlite(grade, file_name)
-
-
-process_control((5, 11), file_name='Расписание')

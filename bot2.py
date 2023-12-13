@@ -1,4 +1,5 @@
 import telebot
+import os
 from telebot import  types
 from con2 import BOT_TOKEN
 from comm2 import starts, helper, search, question, raspisanie, authorization, \
@@ -7,6 +8,7 @@ from data import db_session
 from data.keys import Keys
 from data.lessons import Lessons
 from data.users import User
+from excel_to_sql import process_control
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
@@ -28,6 +30,29 @@ def quit(message):
     btn1 = types.KeyboardButton("Авторизоваться")
     markup.add(btn1)
     bot.send_message(message.from_user.id, 'Вы успешно удалены из базы данных', reply_markup=markup)
+
+
+@bot.message_handler(content_types=['document'])
+def get_documents(message):
+    db_session.global_init("db/logs.db")
+    db_sess = db_session.create_session()
+    user_check = db_sess.query(User).filter(User.user_id == message.from_user.id)
+    if unpack(user_check)[0].about == 'завуч':
+        if message.document.file_name.split('.')[1] == 'xlsx':
+            bot.send_message(message.from_user.id, 'Файл принят')
+            file_info = bot.get_file(message.document.file_id)
+            excel_from_hteacher = bot.download_file(file_info.file_path)
+            with open('temp_timetable.xlsx', 'wb') as file:
+                file.write(excel_from_hteacher)
+            db_sess.query(Lessons).delete()
+            db_sess.commit()
+            process_control((5, 11), file_name='temp_timetable')
+            os.remove('temp_timetable.xlsx')
+            bot.send_message(message.from_user.id, 'Расписание полностью изменено')
+        else:
+            bot.send_message(message.from_user.id, 'Неверное расширение файл (должен быть .xlsx)')
+    else:
+        bot.send_message(message.from_user.id, 'Не отправляйте сюда, пожалуйста, какие-либо файлы!')
 
 
 @bot.message_handler(content_types=['text'])
