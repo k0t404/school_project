@@ -2,7 +2,7 @@ import telebot
 from telebot import  types
 from con2 import BOT_TOKEN
 from comm2 import starts, helper, search, question, raspisanie, authorization, \
-    start_keyboard, announce, prep_raspisanie, prep_ismeneniya, poisk, prep_poisk, prep_raspisanie_control
+    start_keyboard, announce, prep_raspisanie, prep_ismeneniya, poisk, prep_poisk, prep_raspisanie_control, unpack
 from data import db_session
 from data.keys import Keys
 from data.lessons import Lessons
@@ -13,6 +13,21 @@ bot = telebot.TeleBot(BOT_TOKEN)
 @bot.message_handler(commands=['start'])
 def start(message):
     starts(message)
+
+
+@bot.message_handler(commands=['quit'])
+def quit(message):
+    db_session.global_init("db/logs.db")
+    db_sess = db_session.create_session()
+    user_to_quit = db_sess.query(User).filter(User.user_id == message.from_user.id)
+    for user_saved in unpack(user_to_quit):
+        db_sess.delete(user_saved)
+    db_sess.commit()
+
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("Авторизоваться")
+    markup.add(btn1)
+    bot.send_message(message.from_user.id, 'Вы успешно удалены из базы данных', reply_markup=markup)
 
 
 @bot.message_handler(content_types=['text'])
