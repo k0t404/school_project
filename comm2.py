@@ -21,7 +21,7 @@ def start_keyboard(user_pass):
     if user_pass == 'завуч':
         btn1 = types.KeyboardButton('Что может бот?')
         btn2 = types.KeyboardButton('Расписание')
-        btn3 = types.KeyboardButton('Внести изменения')
+        btn3 = types.KeyboardButton('Изменить расписание')
         btn4 = types.KeyboardButton('Отправить сообщение классу')
         btn5 = types.KeyboardButton('Задать вопрос')
         btn6 = types.KeyboardButton('Поиск класса')
