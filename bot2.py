@@ -17,6 +17,20 @@ def start(message):
     starts(message)
 
 
+@bot.message_handler(commands=['help'])
+def help(message):
+    bot.send_message(message.from_user.id, "Я бот Артем.")
+    bot.send_message(message.from_user.id, "Я могу:")
+    bot.send_message(message.from_user.id, "Вывести расписание на сегодня")
+    bot.send_message(message.from_user.id, "Внести изменения в расписание класса")
+    bot.send_message(message.from_user.id, "Отправить сообщение классу")
+    bot.send_message(message.from_user.id, "Напишите /quit, чтобы выйти из базы данных пользователей")
+    bot.send_message(message.from_user.id, "Напишите /start, чтобы начать авторизацию по новой")
+    bot.send_message(message.from_user.id, "Напишите /help, чтобы увидеть это же сообщение")
+    bot.send_message(message.from_user.id,
+                     "При неправильном вводе повторяйте весь процесс заново, не надо отправлять сообщения несколько раз")
+
+
 @bot.message_handler(commands=['quit'])
 def quit(message):
     db_session.global_init("db/logs.db")
@@ -171,7 +185,7 @@ def get_text_messages(message):
 
     # ?????????? функции бота ???????????
     # вывод функций бота, наверное
-    elif message.text == 'Что может бот?':
+    elif message.text == 'Памятка':
         helper(message)
 
     # $$$$$$$$$$ поиск класса $$$$$$$$$$

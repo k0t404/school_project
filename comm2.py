@@ -16,10 +16,12 @@ def unpack(swl_thing):
     for row in swl_thing:
         info.append(row)
     return info
+
+
 def start_keyboard(user_pass):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)  # создание новых кнопок
     if user_pass == 'завуч':
-        btn1 = types.KeyboardButton('Что может бот?')
+        btn1 = types.KeyboardButton('Памятка')
         btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Изменить расписание')
         btn4 = types.KeyboardButton('Отправить сообщение классу')
@@ -27,14 +29,14 @@ def start_keyboard(user_pass):
         btn6 = types.KeyboardButton('Поиск класса')
         markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
     elif user_pass == 'учитель':
-        btn1 = types.KeyboardButton('Что может бот?')
+        btn1 = types.KeyboardButton('Памятка')
         btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Отправить сообщение классу')
         btn4 = types.KeyboardButton('Задать вопрос')
         btn5 = types.KeyboardButton('Поиск класса')
         markup.add(btn1, btn2, btn3, btn4, btn5)
     elif user_pass == 'ученик':
-        btn1 = types.KeyboardButton('Что может бот?')
+        btn1 = types.KeyboardButton('Памятка')
         btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Задать вопрос')
         btn4 = types.KeyboardButton('Поиск класса')
@@ -71,7 +73,12 @@ def helper(message):
     bot.send_message(message.from_user.id, "Я бот Артем.")
     bot.send_message(message.from_user.id, "Я могу:")
     bot.send_message(message.from_user.id, "Вывести расписание на сегодня")
-    bot.send_message(message.from_user.id, "Внести изменения в рассписание класса")
+    bot.send_message(message.from_user.id, "Внести изменения в расписание класса")
+    bot.send_message(message.from_user.id, "Отправить сообщение классу")
+    bot.send_message(message.from_user.id, "Напишите /quit, чтобы выйти из базы данных пользователей")
+    bot.send_message(message.from_user.id, "Напишите /start, чтобы начать авторизацию по новой")
+    bot.send_message(message.from_user.id, "Напишите /help, чтобы увидеть это же сообщение")
+    bot.send_message(message.from_user.id, "При неправильном вводе повторяйте весь процесс заново, не надо отправлять сообщения несколько раз")
 
 
 def prep_raspisanie(message):
