@@ -19,7 +19,6 @@ class KeyboardData:
         self.days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница']
         self.classes = None
 
-
     def create_classes(self):
         db_session.global_init("db/logs.db")
         db_sess = db_session.create_session()
@@ -116,17 +115,11 @@ def prep_raspisanie(message):
     raspisanie(message, clas)
 
 
-def raspisanie(message, clas=None, autharized_student=False):
+def raspisanie(message, clas=None):
     days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
 
     db_sess = db_session.create_session()
     user_back = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
-    print(user_back.about)
-
-    if autharized_student:
-        clas = clas
-    else:
-        clas = f'{clas[0]} "{clas[1].capitalize()}" класс'
 
     if datetime.datetime.today().weekday() > 4:
         bot.send_message(message.from_user.id, 'Бот отказывается работать в выходные. Иди к МЭШ-у')
@@ -167,15 +160,14 @@ def prep_raspisanie_control(message):
 
 
 def raspisanie_control(message, clas, date):
-    clas = f'{clas[0]} "{clas[1].capitalize()}" класс'
-
+    date = date.upper()
     db_sess = db_session.create_session()
     lessons = []
     changes_made = db_sess.query(Changes).filter(Changes.class_letter == clas, Changes.day == date)
     all_changes = {}
 
     user_back = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
-    print(user_back.about)
+
     for change in changes_made:
         all_changes[change.lesson_pos] = change
     for row in db_sess.query(Lessons).filter(Lessons.class_letter == clas, Lessons.day == date).distinct():

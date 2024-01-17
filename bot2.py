@@ -4,7 +4,7 @@ from telebot import types
 from con2 import BOT_TOKEN
 from comm2 import starts, helper, search, question, raspisanie, authorization, \
     start_keyboard, announce, prep_raspisanie, prep_ismeneniya, poisk, prep_poisk, prep_raspisanie_control,\
-    unpack, gen_markup, KeyboardData
+    unpack, gen_markup, KeyboardData, raspisanie_control
 from data import db_session
 from data.keys import Keys
 from data.lessons import Lessons
@@ -36,12 +36,29 @@ def callback_query(call):
         kd.lesson_pos = data[1]
         qu2 = bot.send_message(call.from_user.id, "Введите кабинет и название урока (именно в таком порядке)")
         bot.register_next_step_handler(qu2, prep_ismeneniya, args=[kd.class_to_work, kd.day, kd.lesson_pos])
-    elif data[0] == 'cbras1':
+    elif data[0] == 'cbauth1':
         kd.class_to_work = data[1]
         bot.send_message(call.from_user.id, "Уточните класс",
-                         reply_markup=gen_markup(kd.classes[data[1]], 'cbras2'))
-    elif data[0] == 'cbras2':
+                         reply_markup=gen_markup(kd.classes[data[1]], 'cbauth2'))
+    elif data[0] == 'cbauth2':
         authorization([call.from_user.id, data[1]], student=True)
+    elif data[0] == 'cbrasnow1':
+        kd.class_to_work = data[1]
+        bot.send_message(call.from_user.id, "Уточните класс",
+                         reply_markup=gen_markup(kd.classes[data[1]], 'cbrasnow2'))
+    elif data[0] == 'cbrasnow2':
+        raspisanie(message=call, clas=data[1])
+    elif data[0] == 'cbrasopr1':
+        kd.day = data[1]
+        bot.send_message(call.from_user.id, "Назовите класс",
+                         reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbrasopr2'))
+    elif data[0] == 'cbrasopr2':
+        kd.class_to_work = data[1]
+        bot.send_message(call.from_user.id, "Уточните класс",
+                         reply_markup=gen_markup(kd.classes[data[1]], 'cbrasopr3'))
+    elif data[0] == 'cbrasopr3':
+        kd.class_to_work = data[1]
+        raspisanie_control(call, kd.class_to_work, kd.day)
 
 
 @bot.message_handler(commands=['start'])
@@ -106,7 +123,6 @@ def get_text_messages(message):
     db_session.global_init("db/logs.db")
     db_sess = db_session.create_session()
     authorized_user = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
-    '''print(unpack(authorized_user))'''
     # !!!!!!!!!! вывод расписания !!!!!!!!!!!
     if message.text == 'Расписание':
         if authorized_user:
@@ -122,19 +138,19 @@ def get_text_messages(message):
     elif message.text == 'Сегодняшний день':
         if authorized_user:
             if authorized_user.about.lower() == 'ученик':
-                raspisanie(message, authorized_user.user_key, autharized_student=True)
+                raspisanie(message, authorized_user.user_key)
             else:
-                qu1 = bot.send_message(message.from_user.id, "Введите ваш класс (номер и букву)")
-                bot.register_next_step_handler(qu1, prep_raspisanie)
+                bot.send_message(message.from_user.id, "Выберите класс",
+                                 reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbrasnow1'))
         else:
             bot.send_message(message.from_user.id, "Вы не авторизованы. (пропишите /start)")
 
     # @!@!@!@!@ вывод расписания на определенный день @!@!@!@!@!@
     elif message.text == 'Определенный день':
         if authorized_user:
-            qu1 = bot.send_message(message.from_user.id,
-                                   "Введите день недели (например, понедельник и т.п.) и нужный вам класс (номер и букву)")
-            bot.register_next_step_handler(qu1, prep_raspisanie_control)
+            bot.send_message(message.from_user.id, "Выберите день недели",
+                             reply_markup=gen_markup(['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'],
+                                                     'cbrasopr1'))
         else:
             bot.send_message(message.from_user.id, "Вы не авторизованы. (пропишите /start)")
 
@@ -212,7 +228,7 @@ def get_text_messages(message):
         bot.register_next_step_handler(qu3_2, authorization)
     elif message.text.lower() == 'ученик':
         bot.send_message(message.from_user.id, "Пожалуйста, выберите день недели",
-                         reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbras1'))
+                         reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbauth1'))
 
     # ?????????? функции бота ???????????
     # вывод функций бота, наверное
