@@ -19,6 +19,7 @@ class KeyboardData:
         self.days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница']
         self.classes = None
 
+
     def create_classes(self):
         db_session.global_init("db/logs.db")
         db_sess = db_session.create_session()
@@ -28,7 +29,6 @@ class KeyboardData:
             class_name = thing.class_letter
             if class_name not in classes[class_name.split()[0]]:
                 classes[class_name.split()[0]].append(class_name)
-        print(classes)
         return classes
 
 
@@ -36,7 +36,7 @@ def gen_markup(options, key):
     markup = types.InlineKeyboardMarkup()
     markup.row_width = 2
     for option in options:
-        markup.add(types.InlineKeyboardButton(option, callback_data=f"{key}_{str(option).lower()}"))
+        markup.add(types.InlineKeyboardButton(option, callback_data=f"{key}_{str(option)}"))
     return markup
 
 
@@ -244,46 +244,48 @@ def poisk(clas, message):
                 bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова')
 
 
-def authorization(message):
+def authorization(message, student=False):
     db_sess = db_session.create_session()
     user = User()
-    user.user_id = message.from_user.id
-    key = db_sess.query(Keys).filter(Keys.key_available == message.text)
-    clas = ''.join(message.text.upper().split())
-    clas = [clas[:-1], clas[-1]]
-    class_student = db_sess.query(Lessons).filter(Lessons.class_letter == f'{clas[0]} "{clas[1]}" класс')
-    check = True
-    print(unpack(key), unpack(class_student), message.text)
-    if unpack(key) and len(message.text) == 9:
-        user.about = 'завуч'
-        user.user_key = message.text
-    elif unpack(key) and len(message.text) == 7:
-        user.about = 'учитель'
-        user.user_key = message.text
-    elif unpack(class_student) and len(clas) == 2:
+    if student:
+        clas = message[1]
+        user_id = message[0]
+        user.user_id = user_id
         user.about = 'ученик'
-        user.user_key = f'{clas[0]} "{clas[1]}" класс'
-    else:
-        check = False
-    if check:
+        user.user_key = clas
         usero = user.about
         db_sess.add(user)
         db_sess.commit()
-        bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(usero))
+        bot.send_message(user_id, 'готово', reply_markup=start_keyboard(usero))
     else:
-        bot.send_message(message.from_user.id, 'Что-то пошло не так')
-        redo(message)
+        check = True
+        user.user_id = message.from_user.id
+        key = db_sess.query(Keys).filter(Keys.key_available == message.text)
+        if unpack(key) and len(message.text) == 9:
+            user.about = 'завуч'
+            user.user_key = message.text
+        elif unpack(key) and len(message.text) == 7:
+            user.about = 'учитель'
+            user.user_key = message.text
+        else:
+            check = False
+        if check:
+            usero = user.about
+            db_sess.add(user)
+            db_sess.commit()
+            bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(usero))
+        else:
+            bot.send_message(message.from_user.id, 'Что-то пошло не так')
+            redo(message)
 
 
-def prep_ismeneniya(message):
+def prep_ismeneniya(message, args):
     cabinet, *lesson = message.text.split()
-    kd = KeyboardData()
-    ismeneniya(message, kd.day, kd.class_to_work, kd.lesson_pos, cabinet, ' '.join(lesson))
+    ismeneniya(message, args[1], args[0], args[2], cabinet, ' '.join(lesson))
 
 
 def ismeneniya(message, day, clas, number, cabinet, lesson):
     day = day.upper()
-    print(clas)
     db_sess = db_session.create_session()
     items = Changes()
     items.lesson_pos = number

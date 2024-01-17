@@ -13,12 +13,12 @@ from excel_to_sql import Timetable
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
+kd = KeyboardData()
+
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
-    db_session.global_init("db/logs.db")
-    db_sess = db_session.create_session()
     data = call.data.split('_')
-    kd = KeyboardData()
     kd.classes = kd.create_classes()
     if data[0] == 'cbismras1':
         kd.day = data[1]
@@ -35,7 +35,13 @@ def callback_query(call):
     elif data[0] == 'cbismras4':
         kd.lesson_pos = data[1]
         qu2 = bot.send_message(call.from_user.id, "Введите кабинет и название урока (именно в таком порядке)")
-        bot.register_next_step_handler(qu2, prep_ismeneniya)
+        bot.register_next_step_handler(qu2, prep_ismeneniya, args=[kd.class_to_work, kd.day, kd.lesson_pos])
+    elif data[0] == 'cbras1':
+        kd.class_to_work = data[1]
+        bot.send_message(call.from_user.id, "Уточните класс",
+                         reply_markup=gen_markup(kd.classes[data[1]], 'cbras2'))
+    elif data[0] == 'cbras2':
+        authorization([call.from_user.id, data[1]], student=True)
 
 
 @bot.message_handler(commands=['start'])
@@ -100,7 +106,7 @@ def get_text_messages(message):
     db_session.global_init("db/logs.db")
     db_sess = db_session.create_session()
     authorized_user = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
-
+    '''print(unpack(authorized_user))'''
     # !!!!!!!!!! вывод расписания !!!!!!!!!!!
     if message.text == 'Расписание':
         if authorized_user:
@@ -205,8 +211,8 @@ def get_text_messages(message):
         qu3_2 = bot.send_message(message.from_user.id, "Введите специальный ключ")
         bot.register_next_step_handler(qu3_2, authorization)
     elif message.text.lower() == 'ученик':
-        qu3_3 = bot.send_message(message.from_user.id, "Введите номер и букву класса (именно в этом порядке)")
-        bot.register_next_step_handler(qu3_3, authorization)
+        bot.send_message(message.from_user.id, "Пожалуйста, выберите день недели",
+                         reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbras1'))
 
     # ?????????? функции бота ???????????
     # вывод функций бота, наверное
