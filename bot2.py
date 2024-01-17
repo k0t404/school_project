@@ -1,15 +1,41 @@
 import telebot
 import os
-from telebot import  types
+from telebot import types
 from con2 import BOT_TOKEN
 from comm2 import starts, helper, search, question, raspisanie, authorization, \
-    start_keyboard, announce, prep_raspisanie, prep_ismeneniya, poisk, prep_poisk, prep_raspisanie_control, unpack
+    start_keyboard, announce, prep_raspisanie, prep_ismeneniya, poisk, prep_poisk, prep_raspisanie_control,\
+    unpack, gen_markup, KeyboardData
 from data import db_session
 from data.keys import Keys
 from data.lessons import Lessons
 from data.users import User
-from excel_to_sql import process_control
+from excel_to_sql import Timetable
 bot = telebot.TeleBot(BOT_TOKEN)
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    db_session.global_init("db/logs.db")
+    db_sess = db_session.create_session()
+    data = call.data.split('_')
+    kd = KeyboardData()
+    kd.classes = kd.create_classes()
+    if data[0] == 'cbismras1':
+        kd.day = data[1]
+        bot.send_message(call.from_user.id, "Пожалуйста, назовите класс",
+                         reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbismras2'))
+    elif data[0] == 'cbismras2':
+        kd.class_to_work = data[1]
+        bot.send_message(call.from_user.id, "Пожалуйста, уточните класс",
+                         reply_markup=gen_markup(kd.classes[data[1]], 'cbismras3'))
+    elif data[0] == 'cbismras3':
+        kd.class_to_work = data[1]
+        bot.send_message(call.from_user.id, "Какой по счету урок изменяете?",
+                         reply_markup=gen_markup([1, 2, 3, 4, 5, 6, 7, 8], 'cbismras4'))
+    elif data[0] == 'cbismras4':
+        kd.lesson_pos = data[1]
+        qu2 = bot.send_message(call.from_user.id, "Введите кабинет и название урока (именно в таком порядке)")
+        bot.register_next_step_handler(qu2, prep_ismeneniya)
 
 
 @bot.message_handler(commands=['start'])
@@ -60,7 +86,7 @@ def get_documents(message):
                 file.write(excel_from_hteacher)
             db_sess.query(Lessons).delete()
             db_sess.commit()
-            process_control((5, 11), file_name='temp_timetable')
+            Timetable().process_control((5, 11), file_name='temp_timetable')
             os.remove('temp_timetable.xlsx')
             bot.send_message(message.from_user.id, 'Расписание полностью изменено')
         else:
@@ -73,7 +99,6 @@ def get_documents(message):
 def get_text_messages(message):
     db_session.global_init("db/logs.db")
     db_sess = db_session.create_session()
-
     authorized_user = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
 
     # !!!!!!!!!! вывод расписания !!!!!!!!!!!
@@ -129,10 +154,9 @@ def get_text_messages(message):
     elif message.text == 'Определенный класс':
         if authorized_user:
             if authorized_user.about == 'завуч':
-                qu2 = bot.send_message(message.from_user.id,
-                                       "Введите номер и букву класса (слитно), номер урока, кабинет, название урока",
-                                       reply_markup=start_keyboard(authorized_user.about))
-                bot.register_next_step_handler(qu2, prep_ismeneniya)
+                bot.send_message(message.from_user.id, "Пожалуйста, выберите день недели",
+                                 reply_markup=gen_markup(['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'],
+                                                         'cbismras1'))
             else:
                 bot.send_message(message.from_user.id, "У вас нет прав для изменения расписания",
                                  reply_markup=start_keyboard(authorized_user.about))
@@ -163,6 +187,7 @@ def get_text_messages(message):
     # //////// авторизация /////////
     # начало всей авторизации
     elif message.text == 'Авторизоваться':
+        KeyboardData.user_id = message.from_user.id
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("Завуч")
         btn2 = types.KeyboardButton("Учитель")

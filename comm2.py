@@ -7,8 +7,37 @@ from data.lessons import Lessons
 from data.users import User
 from data.changes import Changes
 from data.keys import Keys
-
 bot = telebot.TeleBot(BOT_TOKEN)
+
+
+class KeyboardData:
+    def __init__(self):
+        self.user_id = ''
+        self.class_to_work = ''
+        self.day = ''
+        self.lesson_pos = ''
+        self.days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница']
+        self.classes = None
+
+    def create_classes(self):
+        db_session.global_init("db/logs.db")
+        db_sess = db_session.create_session()
+        lessons = db_sess.query(Lessons)
+        classes = {'5': [], '6': [], '7': [], '8': [], '9': [], '10': [], '11': []}
+        for thing in lessons:
+            class_name = thing.class_letter
+            if class_name not in classes[class_name.split()[0]]:
+                classes[class_name.split()[0]].append(class_name)
+        print(classes)
+        return classes
+
+
+def gen_markup(options, key):
+    markup = types.InlineKeyboardMarkup()
+    markup.row_width = 2
+    for option in options:
+        markup.add(types.InlineKeyboardButton(option, callback_data=f"{key}_{str(option).lower()}"))
+    return markup
 
 
 def unpack(swl_thing):
@@ -238,49 +267,44 @@ def authorization(message):
         check = False
     if check:
         usero = user.about
-        print(1)
         db_sess.add(user)
         db_sess.commit()
         bot.send_message(message.from_user.id, 'готово', reply_markup=start_keyboard(usero))
     else:
-        print(2)
         bot.send_message(message.from_user.id, 'Что-то пошло не так')
         redo(message)
 
 
 def prep_ismeneniya(message):
-    clas, number, cabinet, *lesson = message.text.split()
-    ismeneniya(message, clas, number, cabinet, ' '.join(lesson))
+    cabinet, *lesson = message.text.split()
+    kd = KeyboardData()
+    ismeneniya(message, kd.day, kd.class_to_work, kd.lesson_pos, cabinet, ' '.join(lesson))
 
 
-def ismeneniya(message, clas, number, cabinet, lesson):
-    days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
-    if datetime.datetime.today().weekday() > 4:
-        bot.send_message(message.from_user.id, 'В выходные невозможно вносить изменения')
+def ismeneniya(message, day, clas, number, cabinet, lesson):
+    day = day.upper()
+    print(clas)
+    db_sess = db_session.create_session()
+    items = Changes()
+    items.lesson_pos = number
+    items.lesson = lesson
+    items.cabinet = cabinet
+    items.class_letter = clas
+    items.day = day
+
+    db_sess.add(items)
+    db_sess.commit()
+    title = db_sess.query(Changes).filter(Changes.lesson == lesson, Changes.day == day).first()
+    if title:
+        bot.send_message(message.from_user.id, 'Изменение было успешно сохраненно')
     else:
-        date = days[datetime.datetime.today().weekday()]
-        clas = f'{clas[:-1]} "{clas[-1].upper()}" класс'
-        print(clas)
-        db_sess = db_session.create_session()
-        items = Changes()
-        items.lesson_pos = number
-        items.lesson = lesson
-        items.cabinet = cabinet
-        items.class_letter = clas
-        items.day = date
-
-        db_sess.add(items)
-        db_sess.commit()
-        title = db_sess.query(Changes).filter(Changes.lesson == lesson, Changes.day == date).first()
-        if title:
-            bot.send_message(message.from_user.id, 'Изменение было успешно сохраненно')
-        else:
-            bot.send_message(message.from_user.id, 'Не удалось внести изменение, попробуйте ещё раз')
-        users = db_sess.query(User).filter(User.about == clas)
-        for user in users:
-            bot.send_message(user.user_id, f'Ваше расписание на {date} изменилось! Изменен {number} урок')
-        bot.send_message(message.from_user.id, 'Ученики были уведомлены об изменениях',
-                         reply_markup=start_keyboard(message.from_user.id))
+        bot.send_message(message.from_user.id, 'Не удалось внести изменение, попробуйте ещё раз')
+    users = db_sess.query(User).filter(User.about == clas)
+    for user in users:
+        bot.send_message(user.user_id, f'Ваше расписание на {day} изменилось! Изменен {number} урок',
+                         reply_markup=start_keyboard('завуч'))
+    bot.send_message(message.from_user.id, 'Ученики были уведомлены об изменениях',
+                     reply_markup=start_keyboard('завуч'))
 
 
 def announce(message):

@@ -1,6 +1,8 @@
-from excel_to_sql import process_control
+from excel_to_sql import Timetable
 from data.create_testKeys import create_keys
 
+
+tb = Timetable()
 # Запуск функции
-process_control((5, 11), file_name='Расписание')
+tb.process_control((5, 11), file_name='Расписание')
 create_keys()
