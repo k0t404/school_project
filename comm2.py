@@ -2,6 +2,7 @@ import logging
 
 import telebot
 import datetime
+from datetime import datetime as dt
 from con2 import BOT_TOKEN
 from telebot import types
 from data import db_session
@@ -55,20 +56,20 @@ def start_keyboard(user_pass):
         btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Изменить расписание')
         btn4 = types.KeyboardButton('Отправить сообщение классу')
-        btn5 = types.KeyboardButton('Задать вопрос')
+        btn5 = types.KeyboardButton('Обратная связь')
         btn6 = types.KeyboardButton('Поиск класса')
         markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
     elif user_pass == 'учитель':
         btn1 = types.KeyboardButton('Мои функции')
         btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Отправить сообщение классу')
-        btn4 = types.KeyboardButton('Задать вопрос')
+        btn4 = types.KeyboardButton('Обратная связь')
         btn5 = types.KeyboardButton('Поиск класса')
         markup.add(btn1, btn2, btn3, btn4, btn5)
     elif user_pass == 'ученик':
         btn1 = types.KeyboardButton('Мои функции')
         btn2 = types.KeyboardButton('Расписание')
-        btn3 = types.KeyboardButton('Задать вопрос')
+        btn3 = types.KeyboardButton('Обратная связь')
         btn4 = types.KeyboardButton('Поиск класса')
         markup.add(btn1, btn2, btn3, btn4)
     return markup
@@ -78,7 +79,7 @@ def starts(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("Авторизоваться")
     markup.add(btn1)
-    bot.send_message(message.from_user.id, "👋 Привет! Я бот Артем, и я помогу тебе с расписанием!",
+    bot.send_message(message.from_user.id, "👋 Привет! Я - бот Арина, и я помогу тебе с расписанием!",
                      reply_markup=markup)
 
 
@@ -95,12 +96,12 @@ def search(message):
 
 
 def question(message):
-    bot.send_message(message.from_user.id, "Все вопросы можно задать в этой форме")
+    bot.send_message(message.from_user.id, "Обратная связь доступна в этой google форме")
     bot.send_message(message.from_user.id, "https://forms.gle/TK1u2TP8jhei8fWa7")
 
 
 def helper(message):
-    bot.send_message(message.from_user.id, "Я бот Артем.")
+    bot.send_message(message.from_user.id, "Я - бот Арина.")
     bot.send_message(message.from_user.id, "Я могу:")
     bot.send_message(message.from_user.id, "Вывести расписание на сегодня")
     bot.send_message(message.from_user.id, "Внести изменения в расписание класса")
@@ -195,6 +196,7 @@ def prep_poisk(message):
     poisk(clas, message)
 
 
+# проблемы записаны по мере изучения причин неисправности функции
 def poisk(clas, message):
     db_sess = db_session.create_session()
     days = ['ПОНЕДЕЛЬНИК', 'ВТОРНИК', 'СРЕДА', 'ЧЕТВЕРГ', 'ПЯТНИЦА']
@@ -204,33 +206,41 @@ def poisk(clas, message):
         date = days[datetime.datetime.today().weekday()]
         clas = f'{clas[:2]} "{clas[-1]}" класс'
         print(clas)
-        if str(datetime.time.hour) >= '15' and str(datetime.time.minute) >= '15':
+        # проблема №1 datetime.time.hour/minute дает пустую переменную, а не нынешнее время,
+        # следовательно ты в if ниже сравнивал что-то на подобии пустоты с int
+        print(1, dt.now(), str(dt.now()))
+        hour_now, minute_now = int((str(dt.now()).split()[1].split(':'))[0]), int((str(dt.now()).split()[1].split(':'))[0])
+        if hour_now >= 15 and minute_now >= 15:
             bot.send_message(message.from_user.id, 'Уроки уже закончились')
         else:
-            if int(datetime.time.hour) >= 8 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 9\
-                    and int(datetime.time.minute) <= 15:
+            # проблема №3 неправильно указаны границы уроков, сменил на достаточно простой вариант
+            # (прежний упрощенный не работал)
+            if hour_now <= 9 and minute_now <= 15:
                 lesson_pos = '1'
-            elif int(datetime.time.hour) >= 9 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 10\
-                    and int(datetime.time.minute) <= 15:
+            elif hour_now <= 10 and minute_now <= 15:
                 lesson_pos = '2'
-            elif int(datetime.time.hour) >= 10 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 11\
-                    and int(datetime.time.minute) <= 15:
+            elif hour_now <= 11 and minute_now <= 20:
                 lesson_pos = '3'
-            elif int(datetime.time.hour) >= 11 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 12\
-                    and int(datetime.time.minute) <= 15:
+            elif hour_now <= 12 and minute_now <= 20:
                 lesson_pos = '4'
-            elif int(datetime.time.hour) >= 12 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 13\
-                    and int(datetime.time.minute) <= 15:
+            elif hour_now <= 13 and minute_now <= 20:
                 lesson_pos = '5'
-            elif int(datetime.time.hour) >= 13 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 14\
-                    and int(datetime.time.minute) <= 15:
+            elif hour_now <= 14 and minute_now <= 15:
                 lesson_pos = '6'
-            elif int(datetime.time.hour) >= 14 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 15\
-                    and int(datetime.time.minute) <= 15:
+            elif hour_now <= 15 and minute_now <= 10:
                 lesson_pos = '7'
-            print(datetime.time.hour,datetime.time.minute)
-            lesson = db_sess.query(Lessons).filter(Lessons.class_letter == clas, Lessons.day == date, Lessons.lesson_pos == lesson_pos)
-            row = db_sess.query(Changes).filter(Changes.day == date, Changes.lesson_pos == lesson_pos, Changes.class_letter == clas)
+            else:
+                # проблема №4 (ну, почти) в некоторых классах, даже в 10 и 11, есть 8 урок
+                lesson_pos = '8'
+
+            # проблема №2, делая запрос в бд, тебе возвращается строка с запросом, которую ты должен "распаковать"
+            # это делается при помощи .first() (работает не во всех случаях, поэтому я написал unpack())
+            lesson = db_sess.query(Lessons).filter(Lessons.class_letter == clas,
+                                                   Lessons.day == date,
+                                                   Lessons.lesson_pos == lesson_pos).first()
+            row = db_sess.query(Changes).filter(Changes.day == date,
+                                                Changes.lesson_pos == lesson_pos,
+                                                Changes.class_letter == clas).first()
             if row:
                 bot.send_message(message.from_user.id, f'{clas} находиться в {row.cabinet} кабинете')
             elif lesson:
