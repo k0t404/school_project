@@ -1,3 +1,5 @@
+import logging
+
 import telebot
 import datetime
 from con2 import BOT_TOKEN
@@ -49,7 +51,7 @@ def unpack(swl_thing):
 def start_keyboard(user_pass):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)  # создание новых кнопок
     if user_pass == 'завуч':
-        btn1 = types.KeyboardButton('Памятка')
+        btn1 = types.KeyboardButton('Мои функции')
         btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Изменить расписание')
         btn4 = types.KeyboardButton('Отправить сообщение классу')
@@ -57,14 +59,14 @@ def start_keyboard(user_pass):
         btn6 = types.KeyboardButton('Поиск класса')
         markup.add(btn1, btn2, btn3, btn4, btn5, btn6)
     elif user_pass == 'учитель':
-        btn1 = types.KeyboardButton('Памятка')
+        btn1 = types.KeyboardButton('Мои функции')
         btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Отправить сообщение классу')
         btn4 = types.KeyboardButton('Задать вопрос')
         btn5 = types.KeyboardButton('Поиск класса')
         markup.add(btn1, btn2, btn3, btn4, btn5)
     elif user_pass == 'ученик':
-        btn1 = types.KeyboardButton('Памятка')
+        btn1 = types.KeyboardButton('Мои функции')
         btn2 = types.KeyboardButton('Расписание')
         btn3 = types.KeyboardButton('Задать вопрос')
         btn4 = types.KeyboardButton('Поиск класса')
@@ -293,24 +295,35 @@ def ismeneniya(message, day, clas, number, cabinet, lesson):
         bot.send_message(message.from_user.id, 'Изменение было успешно сохраненно')
     else:
         bot.send_message(message.from_user.id, 'Не удалось внести изменение, попробуйте ещё раз')
-    users = db_sess.query(User).filter(User.about == clas)
+    users = db_sess.query(User).filter(User.user_key == clas).all()
+    cou = 0
     for user in users:
-        bot.send_message(user.user_id, f'Ваше расписание на {day} изменилось! Изменен {number} урок',
-                         reply_markup=start_keyboard('завуч'))
-    bot.send_message(message.from_user.id, 'Ученики были уведомлены об изменениях',
+        try:
+            cou += 1
+            bot.send_message(user.user_id, f'Ваше расписание на {day} изменилось! Изменен {number} урок',
+                             reply_markup=start_keyboard('завуч'))
+        except Exception as e:
+            cou -= 1
+            print('error occured')
+    bot.send_message(message.from_user.id, f'Ученики были уведомлены об изменениях ({cou} ученикам(-у))',
                      reply_markup=start_keyboard('завуч'))
 
 
-def announce(message):
+def announce(message, args):
     db_sess = db_session.create_session()
-    clas = message.text.split()[0]
-    clas = f'{clas[:-1]} "{clas[-1].upper()}" класс'
-    things_to_announce = ' '.join(message.text.split()[1:])
-    students = db_sess.query(User).filter(User.user_key == clas)
+    clas = args[1]
+    things_to_announce = ' '.join(message.text)
+    students = db_sess.query(User).filter(User.user_key == clas).all()
+    cou = 0
     for student in students:
-        bot.send_message(student.user_id, things_to_announce,
-                         reply_markup=start_keyboard(message.from_user.id))
-    bot.send_message(message.from_user.id, 'Сообщение отправлено',
+        try:
+            cou += 1
+            bot.send_message(student.user_id, things_to_announce,
+                             reply_markup=start_keyboard(message.from_user.id))
+        except Exception as e:
+            cou -= 1
+            print('error occured')
+    bot.send_message(message.from_user.id, f'Сообщение отправлено {cou} ученикам(-у)',
                      reply_markup=start_keyboard(message.from_user.id))
 
 

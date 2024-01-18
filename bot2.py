@@ -59,6 +59,15 @@ def callback_query(call):
     elif data[0] == 'cbrasopr3':
         kd.class_to_work = data[1]
         raspisanie_control(call, kd.class_to_work, kd.day)
+    elif data[0] == 'cbsendmes1':
+        kd.class_to_work = data[1]
+        bot.send_message(call.from_user.id, "Уточните класс",
+                         reply_markup=gen_markup(kd.classes[data[1]], 'cbsendmes2'))
+    elif data[0] == 'cbsendmes2':
+        kd.class_to_work = data[1]
+        qu5 = bot.send_message(call.from_user.id,
+                               "Введите сообщение, которое хотите отправить")
+        bot.register_next_step_handler(qu5, announce, args=[call, kd.class_to_work])
 
 
 @bot.message_handler(commands=['start'])
@@ -127,9 +136,10 @@ def get_text_messages(message):
     if message.text == 'Расписание':
         if authorized_user:
             markup_time = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            btn1 = types.KeyboardButton("Сегодняшний день")
-            btn2 = types.KeyboardButton("Определенный день")
-            markup_time.add(btn1, btn2)
+            btn1 = types.KeyboardButton("Назад")
+            btn2 = types.KeyboardButton("Сегодняшний день")
+            btn3 = types.KeyboardButton("Определенный день")
+            markup_time.add(btn1, btn2, btn3)
             bot.send_message(message.from_user.id, 'Чего именно вы хотите?', reply_markup=markup_time)
         else:
             bot.send_message(message.from_user.id, "Вы не авторизованы. (пропишите /start)")
@@ -164,9 +174,10 @@ def get_text_messages(message):
         if authorized_user:
             if authorized_user.about == 'завуч':
                 markup_table = types.ReplyKeyboardMarkup(resize_keyboard=True)
-                btn1 = types.KeyboardButton("Определенный класс")
-                btn2 = types.KeyboardButton("У всех")
-                markup_table.add(btn1, btn2)
+                btn1 = types.KeyboardButton("Назад")
+                btn2 = types.KeyboardButton("Определенный класс")
+                btn3 = types.KeyboardButton("У всех")
+                markup_table.add(btn1, btn2, btn3)
                 bot.send_message(message.from_user.id, 'Выберите вид изменения', reply_markup=markup_table)
             else:
                 bot.send_message(message.from_user.id, "У вас нет прав для изменения расписания",
@@ -198,9 +209,8 @@ def get_text_messages(message):
     # ........ отправка сообщения классу .........
     elif message.text == 'Отправить сообщение классу':
         if authorized_user and authorized_user.about != 'ученик':
-            qu5 = bot.send_message(message.from_user.id,
-                                   "Введите номер и букву класса (через пробел) и сообщение, которое хотите передать")
-            bot.register_next_step_handler(qu5, announce)
+            bot.send_message(message.from_user.id, "Выберите класс",
+                             reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbsendmes1'))
         elif authorized_user and authorized_user.about == 'ученик':
             bot.send_message(message.from_user.id, "У вас нет доступа к данной функции")
         else:
@@ -227,12 +237,12 @@ def get_text_messages(message):
         qu3_2 = bot.send_message(message.from_user.id, "Введите специальный ключ")
         bot.register_next_step_handler(qu3_2, authorization)
     elif message.text.lower() == 'ученик':
-        bot.send_message(message.from_user.id, "Пожалуйста, выберите день недели",
+        bot.send_message(message.from_user.id, "Выберите класс",
                          reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbauth1'))
 
     # ?????????? функции бота ???????????
     # вывод функций бота, наверное
-    elif message.text == 'Памятка':
+    elif message.text == 'Мои функции':
         helper(message)
 
     # $$$$$$$$$$ поиск класса $$$$$$$$$$
@@ -248,7 +258,9 @@ def get_text_messages(message):
             poisk(clas, message)
         else:
             bot.send_message(message.from_user.id, "Вы не авторизованы. (пропишите /start)")
-
+    # !||!|!|!|! возврат на главную !|!|!||!|!|
+    elif message.text == 'Назад':
+        bot.send_message(message.from_user.id, "Возвращаю.", reply_markup=start_keyboard(authorized_user.about))
     # \\\\\\\\\\ просто, чтобы было \\\\\\\\\\\
     else:
         print(message.text.split())
