@@ -95,8 +95,8 @@ def search(message):
 
 
 def question(message):
-    bot.send_message(message.from_user.id, "Все вопросы можно писать на нашу почту")
-    bot.send_message(message.from_user.id, "cot5626@mail.ru")
+    bot.send_message(message.from_user.id, "Все вопросы можно задать в этой форме")
+    bot.send_message(message.from_user.id, "https://forms.gle/TK1u2TP8jhei8fWa7")
 
 
 def helper(message):
@@ -207,27 +207,28 @@ def poisk(clas, message):
         if str(datetime.time.hour) >= '15' and str(datetime.time.minute) >= '15':
             bot.send_message(message.from_user.id, 'Уроки уже закончились')
         else:
-            if str(datetime.time.hour) >= '8' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '9'\
-                    and str(datetime.time.minute) <= '15':
+            if int(datetime.time.hour) >= 8 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 9\
+                    and int(datetime.time.minute) <= 15:
                 lesson_pos = '1'
-            elif str(datetime.time.hour) >= '9' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '10'\
-                    and str(datetime.time.minute) <= '15':
+            elif int(datetime.time.hour) >= 9 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 10\
+                    and int(datetime.time.minute) <= 15:
                 lesson_pos = '2'
-            elif str(datetime.time.hour) >= '10' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '11'\
-                    and str(datetime.time.minute) <= '15':
+            elif int(datetime.time.hour) >= 10 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 11\
+                    and int(datetime.time.minute) <= 15:
                 lesson_pos = '3'
-            elif str(datetime.time.hour) >= '11' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '12'\
-                    and str(datetime.time.minute) <= '15':
+            elif int(datetime.time.hour) >= 11 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 12\
+                    and int(datetime.time.minute) <= 15:
                 lesson_pos = '4'
-            elif str(datetime.time.hour) >= '12' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '13'\
-                    and str(datetime.time.minute) <= '15':
+            elif int(datetime.time.hour) >= 12 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 13\
+                    and int(datetime.time.minute) <= 15:
                 lesson_pos = '5'
-            elif str(datetime.time.hour) >= '13' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '14'\
-                    and str(datetime.time.minute) <= '15':
+            elif int(datetime.time.hour) >= 13 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 14\
+                    and int(datetime.time.minute) <= 15:
                 lesson_pos = '6'
-            elif str(datetime.time.hour) >= '14' and str(datetime.time.minute) >= '15' and str(datetime.time.hour) <= '15'\
-                    and str(datetime.time.minute) <= '15':
+            elif int(datetime.time.hour) >= 14 and int(datetime.time.minute) >= 15 and int(datetime.time.hour) <= 15\
+                    and int(datetime.time.minute) <= 15:
                 lesson_pos = '7'
+            print(datetime.time.hour,datetime.time.minute)
             lesson = db_sess.query(Lessons).filter(Lessons.class_letter == clas, Lessons.day == date, Lessons.lesson_pos == lesson_pos)
             row = db_sess.query(Changes).filter(Changes.day == date, Changes.lesson_pos == lesson_pos, Changes.class_letter == clas)
             if row:
