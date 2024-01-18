@@ -68,6 +68,13 @@ def callback_query(call):
         qu5 = bot.send_message(call.from_user.id,
                                "Введите сообщение, которое хотите отправить")
         bot.register_next_step_handler(qu5, announce, args=[call, kd.class_to_work])
+    elif data[0] == 'cbspoisk1':
+        kd.class_to_work = data[1]
+        bot.send_message(call.from_user.id, "Уточните класс",
+                         reply_markup=gen_markup(kd.classes[data[1]], 'cbspoisk2'))
+    elif data[0] == 'cbspoisk2':
+        kd.class_to_work = data[1]
+        poisk(kd.class_to_work, call)
 
 
 @bot.message_handler(commands=['start'])
@@ -248,19 +255,15 @@ def get_text_messages(message):
     # $$$$$$$$$$ поиск класса $$$$$$$$$$
     elif message.text == 'Поиск класса':
         if authorized_user:
-            poisk1 = bot.send_message(message.from_user.id, "Введите класс, который вам нужен")
-            bot.register_next_step_handler(poisk1, prep_poisk)
+            bot.send_message(message.from_user.id, "Выберите класс",
+                             reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbspoisk1'))
         else:
             bot.send_message(message.from_user.id, "Вы не авторизованы. (пропишите /start)")
-    elif message.text.split()[0] == 'Поиск':
-        if authorized_user:
-            clas = (message.text.split())[1:]
-            poisk(clas, message)
-        else:
-            bot.send_message(message.from_user.id, "Вы не авторизованы. (пропишите /start)")
+
     # !||!|!|!|! возврат на главную !|!|!||!|!|
     elif message.text == 'Назад':
         bot.send_message(message.from_user.id, "Возвращаю.", reply_markup=start_keyboard(authorized_user.about))
+
     # \\\\\\\\\\ просто, чтобы было \\\\\\\\\\\
     else:
         print(message.text.split())

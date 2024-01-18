@@ -68,9 +68,9 @@ def start_keyboard(user_pass):
         markup.add(btn1, btn2, btn3, btn4, btn5)
     elif user_pass == 'ученик':
         btn1 = types.KeyboardButton('Мои функции')
-        btn2 = types.KeyboardButton('Расписание')
+        btn2 = types.KeyboardButton('Поиск класса')
         btn3 = types.KeyboardButton('Обратная связь')
-        btn4 = types.KeyboardButton('Поиск класса')
+        btn4 = types.KeyboardButton('Расписание')
         markup.add(btn1, btn2, btn3, btn4)
     return markup
 
@@ -204,11 +204,9 @@ def poisk(clas, message):
         bot.send_message(message.from_user.id, 'В выходные невозможно найти класс')
     else:
         date = days[datetime.datetime.today().weekday()]
-        clas = f'{clas[:2]} "{clas[-1]}" класс'
         print(clas)
         # проблема №1 datetime.time.hour/minute дает пустую переменную, а не нынешнее время,
         # следовательно ты в if ниже сравнивал что-то на подобии пустоты с int
-        print(1, dt.now(), str(dt.now()))
         hour_now, minute_now = int((str(dt.now()).split()[1].split(':'))[0]), int((str(dt.now()).split()[1].split(':'))[0])
         if hour_now >= 15 and minute_now >= 15:
             bot.send_message(message.from_user.id, 'Уроки уже закончились')
@@ -242,13 +240,15 @@ def poisk(clas, message):
                                                 Changes.lesson_pos == lesson_pos,
                                                 Changes.class_letter == clas).first()
             if row:
-                bot.send_message(message.from_user.id, f'{clas} находиться в {row.cabinet} кабинете')
+                bot.send_message(message.from_user.id, f'{clas} должен быть в {row.cabinet} кабинете')
             elif lesson:
-                bot.send_message(message.from_user.id, f'{clas} находиться в {lesson.cabinet} кабинете')
+                bot.send_message(message.from_user.id, f'{clas} должен быть в {lesson.cabinet} кабинете')
             else:
                 bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова')
 
 
+# возможна ошибка с авторизацией за завуча, когда выбирал учителя, но с нормальным ключом-идентификатором
+# шансы будут малюсенькими, так что можно не фиксить
 def authorization(message, student=False):
     db_sess = db_session.create_session()
     user = User()
