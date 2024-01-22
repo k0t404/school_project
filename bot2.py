@@ -14,7 +14,7 @@ from excel_to_sql import Timetable
 from ban import Ban
 bot = telebot.TeleBot(BOT_TOKEN)
 
-
+db_session.global_init("db/logs.db")
 kd = KeyboardData()
 ban = Ban()
 
@@ -101,7 +101,6 @@ def help(message):
 
 @bot.message_handler(commands=['quit'])
 def quit(message):
-    db_session.global_init("db/logs.db")
     db_sess = db_session.create_session()
     user_to_quit = db_sess.query(User).filter(User.user_id == message.from_user.id)
     for user_saved in unpack(user_to_quit):
@@ -116,7 +115,6 @@ def quit(message):
 
 @bot.message_handler(content_types=['document'])
 def get_documents(message):
-    db_session.global_init("db/logs.db")
     db_sess = db_session.create_session()
     user_check = db_sess.query(User).filter(User.user_id == message.from_user.id)
     if unpack(user_check)[0].about == 'завуч':
@@ -139,7 +137,6 @@ def get_documents(message):
 
 async def ban_user(last_message, ban_amount):
     # удаление с бд
-    db_session.global_init("db/logs.db")
     db_sess = db_session.create_session()
     user_to_quit = db_sess.query(User).filter(User.user_id == last_message.from_user.id)
     for user_saved in unpack(user_to_quit):
@@ -189,7 +186,6 @@ def get_text_messages(message):
 
 
 def work(message):
-    db_session.global_init("db/logs.db")
     db_sess = db_session.create_session()
     authorized_user = db_sess.query(User).filter(User.user_id == message.from_user.id).first()
     # !!!!!!!!!! вывод расписания !!!!!!!!!!!

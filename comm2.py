@@ -13,6 +13,9 @@ from data.keys import Keys
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
+db_session.global_init("db/logs.db")
+
+
 class KeyboardData:
     def __init__(self):
         self.user_id = ''
@@ -23,7 +26,6 @@ class KeyboardData:
         self.classes = None
 
     def create_classes(self):
-        db_session.global_init("db/logs.db")
         db_sess = db_session.create_session()
         lessons = db_sess.query(Lessons)
         classes = {'5': [], '6': [], '7': [], '8': [], '9': [], '10': [], '11': []}
