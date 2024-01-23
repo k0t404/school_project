@@ -50,60 +50,94 @@ def callback_query(call):
 def callback_work(call):
     data = call.data.split('_')
     kd.classes = kd.create_classes()
+    message_cb = call.message
+    chat_id_cb = message_cb.chat.id
+    message_id_cb = message_cb.message_id
     if data[0] == 'cbismras1':
         kd.day = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'День недели выбран ({data[1]})')
         bot.send_message(call.from_user.id, "Пожалуйста, назовите класс",
                          reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbismras2'))
     elif data[0] == 'cbismras2':
         kd.class_to_work = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Класс выбран ({data[1]})')
         bot.send_message(call.from_user.id, "Пожалуйста, уточните класс",
                          reply_markup=gen_markup(kd.classes[data[1]], 'cbismras3'))
+
     elif data[0] == 'cbismras3':
         kd.class_to_work = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Точный класс выбран ({data[1]})')
         bot.send_message(call.from_user.id, "Какой по счету урок изменяете?",
                          reply_markup=gen_markup([1, 2, 3, 4, 5, 6, 7, 8], 'cbismras4'))
     elif data[0] == 'cbismras4':
         kd.lesson_pos = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Урок выбран ({data[1]})')
         qu2 = bot.send_message(call.from_user.id, "Введите кабинет и название урока (именно в таком порядке)")
         bot.register_next_step_handler(qu2, prep_ismeneniya, args=[kd.class_to_work, kd.day, kd.lesson_pos])
     elif data[0] == 'cbauth1':
         kd.class_to_work = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Класс выбран ({data[1]})')
         bot.send_message(call.from_user.id, "Уточните класс",
                          reply_markup=gen_markup(kd.classes[data[1]], 'cbauth2'))
     elif data[0] == 'cbauth2':
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Точный класс выбран ({data[1]})')
         authorization([call.from_user.id, data[1]], student=True)
     elif data[0] == 'cbrasnow1':
         kd.class_to_work = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Класс выбран ({data[1]})')
         bot.send_message(call.from_user.id, "Уточните класс",
                          reply_markup=gen_markup(kd.classes[data[1]], 'cbrasnow2'))
     elif data[0] == 'cbrasnow2':
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Точный класс выбран ({data[1]})')
         raspisanie(message=call, clas=data[1])
     elif data[0] == 'cbrasopr1':
         kd.day = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'День недели выбран ({data[1]})')
         bot.send_message(call.from_user.id, "Назовите класс",
                          reply_markup=gen_markup([5, 6, 7, 8, 9, 10, 11], 'cbrasopr2'))
     elif data[0] == 'cbrasopr2':
         kd.class_to_work = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Класс выбран ({data[1]})')
         bot.send_message(call.from_user.id, "Уточните класс",
                          reply_markup=gen_markup(kd.classes[data[1]], 'cbrasopr3'))
     elif data[0] == 'cbrasopr3':
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Точный класс выбран ({data[1]})')
         kd.class_to_work = data[1]
         raspisanie_control(call, kd.class_to_work, kd.day)
     elif data[0] == 'cbsendmes1':
         kd.class_to_work = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Класс выбран ({data[1]})')
         bot.send_message(call.from_user.id, "Уточните класс",
                          reply_markup=gen_markup(kd.classes[data[1]], 'cbsendmes2'))
     elif data[0] == 'cbsendmes2':
         kd.class_to_work = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Точный класс выбран ({data[1]})')
         qu5 = bot.send_message(call.from_user.id,
                                "Введите сообщение, которое хотите отправить")
         bot.register_next_step_handler(qu5, announce, args=[call, kd.class_to_work])
     elif data[0] == 'cbspoisk1':
         kd.class_to_work = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Класс выбран ({data[1]})')
         bot.send_message(call.from_user.id, "Уточните класс",
                          reply_markup=gen_markup(kd.classes[data[1]], 'cbspoisk2'))
     elif data[0] == 'cbspoisk2':
         kd.class_to_work = data[1]
+        bot.edit_message_text(chat_id=chat_id_cb, message_id=message_id_cb,
+                              text=f'Точный класс выбран ({data[1]})')
         poisk(kd.class_to_work, call)
 
 
