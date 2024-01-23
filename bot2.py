@@ -1,3 +1,4 @@
+from datetime import datetime as dt
 import telebot
 import os
 import asyncio
@@ -21,26 +22,28 @@ ban = Ban()
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
-    ban.checks()
-    ban.ban_check()
-    if ban.currently_banned:
-        if ban.bans == 0:
+    if str(call.from_user.id) in ban.currently_banned.keys() and time_left(call) != 0:
+        if ban.bans[str(call.from_user.id)] == 0:
+            bot.send_message(call.from_user.id, "Вы были заблокированы на 30 минут. Причина - спам.",
+                             reply_markup=types.ReplyKeyboardRemove())
+        elif ban.bans[str(call.from_user.id)] == 1:
             bot.send_message(call.from_user.id, "Вы были заблокированы на 1ч. Причина - спам.",
                              reply_markup=types.ReplyKeyboardRemove())
-        elif ban.bans == 1:
+        elif ban.bans[str(call.from_user.id)] == 2:
             bot.send_message(call.from_user.id, "Вы были заблокированы на 5ч. Причина - спам.",
                              reply_markup=types.ReplyKeyboardRemove())
-        elif ban.bans == 2:
+        elif ban.bans[str(call.from_user.id)] == 3:
             bot.send_message(call.from_user.id, "Вы были заблокированы на 24ч. Причина - спам.",
                              reply_markup=types.ReplyKeyboardRemove())
-        elif ban.bans == 3:
+        elif ban.bans[str(call.from_user.id)] == 4:
             bot.send_message(call.from_user.id, "Вы были заблокированы на 72ч. Причина - спам.",
                              reply_markup=types.ReplyKeyboardRemove())
-        elif ban.bans >= 4:
-            bot.send_message(call.from_user.id, "Вы были заблокированы на 168. Причина - спам.",
+        elif ban.bans[str(call.from_user.id)] >= 5:
+            bot.send_message(call.from_user.id, "Вы были заблокированы на 168ч. Причина - спам.",
                              reply_markup=types.ReplyKeyboardRemove())
-        asyncio.run(ban_user(call, ban.bans))
     else:
+        ban.checks(call.from_user.id)
+        ban.ban_check(call.from_user.id)
         callback_work(call)
 
 
@@ -120,7 +123,13 @@ def help(message):
     bot.send_message(message.from_user.id, "Напишите /start, чтобы начать авторизацию по новой")
     bot.send_message(message.from_user.id, "Напишите /help, чтобы увидеть это же сообщение")
     bot.send_message(message.from_user.id,
-                     "При неправильном вводе повторяйте весь процесс заново, не надо отправлять сообщения несколько раз")
+                     "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    bot.send_message(message.from_user.id,
+                     "Если отправить более 15 сообщений с интервалом 1.3 сек и менее, то вас заблокирует!")
+    bot.send_message(message.from_user.id,
+                     "Чтобы этого не случилось, достаточно подождать 3 секунды и продолжить работу со мной")
+    bot.send_message(message.from_user.id,
+                     "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 @bot.message_handler(commands=['quit'])
@@ -159,53 +168,62 @@ def get_documents(message):
         bot.send_message(message.from_user.id, 'Не отправляйте сюда, пожалуйста, какие-либо файлы!')
 
 
-async def ban_user(last_message, ban_amount):
-    # удаление с бд
-    db_sess = db_session.create_session()
-    user_to_quit = db_sess.query(User).filter(User.user_id == last_message.from_user.id)
-    for user_saved in unpack(user_to_quit):
-        db_sess.delete(user_saved)
-    db_sess.commit()
-    # ожидание
-    if ban_amount == 0:
-        await asyncio.sleep(1 * 60 * 60)
-    elif ban_amount == 1:
-        await asyncio.sleep(5 * 60 * 60)
-    elif ban_amount == 2:
-        await asyncio.sleep(24 * 60 * 60)
-    elif ban_amount == 3:
-        await asyncio.sleep(72 * 60 * 60)
-    elif ban_amount >= 4:
-        await asyncio.sleep(168 * 60 * 60)
-    # разбан
-    ban.currently_banned = False
-    ban.bans += 1
-    bot.send_message(last_message.from_user.id, "Вы были разблокированы. Пройдите авторизацию заново.")
-    start(last_message)
+def time_left(last_message):
+    start_ban, user_id_ban, end_ban = ban.currently_banned[str(last_message.from_user.id)]
+    due = dt.now() - start_ban
+    need = end_ban - start_ban
+    if len(str(need).split()) != 1:
+        day_need, hour_need, minute_need, second_need = float((str(need).split()[0])), \
+                                                        float((str(need).split()[2].split(':'))[0]), \
+                                                        float((str(need).split()[2].split(':'))[0]), \
+                                                        float((str(need).split()[2].split(':'))[0])
+    else:
+        day_need, hour_need, minute_need, second_need = 0, \
+                                                        float((str(need).split(':'))[0]), \
+                                                        float((str(need).split(':'))[1]), \
+                                                        float((str(need).split(':'))[2])
+    if len(str(due).split()) != 1:
+        day_due, hour_due, minute_due, second_due = float((str(due).split()[0])),\
+                                                    float((str(due).split()[2].split(':'))[0]),\
+                                                    float((str(due).split()[2].split(':'))[0]),\
+                                                    float((str(due).split()[2].split(':'))[0])
+    else:
+        day_due, hour_due, minute_due, second_due = 0, \
+                                                    float((str(due).split(':'))[0]), \
+                                                    float((str(due).split(':'))[1]), \
+                                                    float((str(due).split(':'))[2])
+
+    left = [abs(day_due - day_need)*24*60*60, abs(hour_due - hour_need)*60*60, abs(minute_due - minute_need)*60,
+            abs(second_due - second_need)]
+    seconds_left = sum(left)
+    return seconds_left
 
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
-    ban.checks()
-    ban.ban_check()
-    if ban.currently_banned:
-        if ban.bans == 0:
+    if str(message.from_user.id) in ban.currently_banned.keys() and time_left(message) != 0:
+        if ban.bans[str(message.from_user.id)] == 0:
+            bot.send_message(message.from_user.id, "Вы были заблокированы на 30 минут. Причина - спам.",
+                             reply_markup=types.ReplyKeyboardRemove())
+        elif ban.bans[str(message.from_user.id)] == 1:
             bot.send_message(message.from_user.id, "Вы были заблокированы на 1ч. Причина - спам.",
                              reply_markup=types.ReplyKeyboardRemove())
-        elif ban.bans == 1:
+        elif ban.bans[str(message.from_user.id)] == 2:
             bot.send_message(message.from_user.id, "Вы были заблокированы на 5ч. Причина - спам.",
                              reply_markup=types.ReplyKeyboardRemove())
-        elif ban.bans == 2:
+        elif ban.bans[str(message.from_user.id)] == 3:
             bot.send_message(message.from_user.id, "Вы были заблокированы на 24ч. Причина - спам.",
                              reply_markup=types.ReplyKeyboardRemove())
-        elif ban.bans == 3:
+        elif ban.bans[str(message.from_user.id)] == 4:
             bot.send_message(message.from_user.id, "Вы были заблокированы на 72ч. Причина - спам.",
                              reply_markup=types.ReplyKeyboardRemove())
-        elif ban.bans >= 4:
-            bot.send_message(message.from_user.id, "Вы были заблокированы на 168. Причина - спам.",
+        elif ban.bans[str(message.from_user.id)] >= 5:
+            bot.send_message(message.from_user.id, "Вы были заблокированы на 168ч. Причина - спам.",
                              reply_markup=types.ReplyKeyboardRemove())
-        asyncio.run(ban_user(message, ban.bans))
+
     else:
+        ban.checks(message.from_user.id)
+        ban.ban_check(message.from_user.id)
         work(message)
 
 
