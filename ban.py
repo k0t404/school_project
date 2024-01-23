@@ -11,7 +11,7 @@ class Ban:
         self.second = 0.0
 
     def ban_check(self):
-        if self.warning >= 10:
+        if self.warning >= 12:
             print('time to ban')
             self.warning = 0
             self.currently_banned = True  # banning process

@@ -21,6 +21,30 @@ ban = Ban()
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
+    ban.checks()
+    ban.ban_check()
+    if ban.currently_banned:
+        if ban.bans == 0:
+            bot.send_message(call.from_user.id, "Вы были заблокированы на 1ч. Причина - спам.",
+                             reply_markup=types.ReplyKeyboardRemove())
+        elif ban.bans == 1:
+            bot.send_message(call.from_user.id, "Вы были заблокированы на 5ч. Причина - спам.",
+                             reply_markup=types.ReplyKeyboardRemove())
+        elif ban.bans == 2:
+            bot.send_message(call.from_user.id, "Вы были заблокированы на 24ч. Причина - спам.",
+                             reply_markup=types.ReplyKeyboardRemove())
+        elif ban.bans == 3:
+            bot.send_message(call.from_user.id, "Вы были заблокированы на 72ч. Причина - спам.",
+                             reply_markup=types.ReplyKeyboardRemove())
+        elif ban.bans >= 4:
+            bot.send_message(call.from_user.id, "Вы были заблокированы на 168. Причина - спам.",
+                             reply_markup=types.ReplyKeyboardRemove())
+        asyncio.run(ban_user(call, ban.bans))
+    else:
+        callback_work(call)
+
+
+def callback_work(call):
     data = call.data.split('_')
     kd.classes = kd.create_classes()
     if data[0] == 'cbismras1':

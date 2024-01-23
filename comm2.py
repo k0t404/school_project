@@ -115,8 +115,8 @@ def helper(message):
     bot.send_message(message.from_user.id, "Напишите /help, чтобы увидеть это же сообщение")
     bot.send_message(message.from_user.id,
                      "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    bot.send_message(message.from_user.id, "Предупреждение: если отправить более 10 сообщений, с интервалом 2.1 сек и менее")
-    bot.send_message(message.from_user.id, "Вас заблокирует")
+    bot.send_message(message.from_user.id, "Предупреждение: если отправить более 12 сообщений с интервалом 2.1 сек и менее, то....")
+    bot.send_message(message.from_user.id, "Вас заблокирует!")
     bot.send_message(message.from_user.id,
                      "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
