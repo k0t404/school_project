@@ -2,7 +2,7 @@ import logging
 
 import telebot
 import datetime
-from datetime import datetime as dt
+from datetime import datetime as dt, time as t
 from con2 import BOT_TOKEN
 from telebot import types
 from data import db_session
@@ -216,46 +216,42 @@ def poisk(clas, message):
     else:
         date = days[datetime.datetime.today().weekday()]
         print(clas)
-        # проблема №1 datetime.time.hour/minute дает пустую переменную, а не нынешнее время,
-        # следовательно ты в if ниже сравнивал что-то на подобии пустоты с int
-        hour_now, minute_now = int((str(dt.now()).split()[1].split(':'))[0]), int((str(dt.now()).split()[1].split(':'))[0])
-        if hour_now >= 15 and minute_now >= 15:
-            bot.send_message(message.from_user.id, 'Уроки уже закончились')
+        hour_now, minute_now = int((str(dt.now()).split()[1].split(':'))[0]), int((str(dt.now()).split()[1].split(':'))[1])
+        print(str(dt.now()).split()[1], hour_now, minute_now)
+        time_now = hour_now + minute_now / 60
+        if time_now <= 9.25:
+            lesson_pos = '1'
+        elif time_now <= 10.25:
+            lesson_pos = '2'
+        elif time_now <= 11.3333:
+            lesson_pos = '3'
+        elif time_now <= 12.3333:
+            lesson_pos = '4'
+        elif time_now <= 13.3333:
+            lesson_pos = '5'
+        elif time_now <= 14.25:
+            lesson_pos = '6'
+        elif time_now <= 15.166667:
+            lesson_pos = '7'
+        elif time_now <= 16.25:
+            lesson_pos = '8'
         else:
-            # проблема №3 неправильно указаны границы уроков, сменил на достаточно простой вариант
-            # (прежний упрощенный не работал)
-            if hour_now <= 9 and minute_now <= 15:
-                lesson_pos = '1'
-            elif hour_now <= 10 and minute_now <= 15:
-                lesson_pos = '2'
-            elif hour_now <= 11 and minute_now <= 20:
-                lesson_pos = '3'
-            elif hour_now <= 12 and minute_now <= 20:
-                lesson_pos = '4'
-            elif hour_now <= 13 and minute_now <= 20:
-                lesson_pos = '5'
-            elif hour_now <= 14 and minute_now <= 15:
-                lesson_pos = '6'
-            elif hour_now <= 15 and minute_now <= 10:
-                lesson_pos = '7'
-            else:
-                # проблема №4 (ну, почти) в некоторых классах, даже в 10 и 11, есть 8 урок
-                lesson_pos = '8'
+            bot.send_message(message.from_user.id, 'Уроки уже закончились')
 
-            # проблема №2, делая запрос в бд, тебе возвращается строка с запросом, которую ты должен "распаковать"
-            # это делается при помощи .first() (работает не во всех случаях, поэтому я написал unpack())
-            lesson = db_sess.query(Lessons).filter(Lessons.class_letter == clas,
-                                                   Lessons.day == date,
-                                                   Lessons.lesson_pos == lesson_pos).first()
-            row = db_sess.query(Changes).filter(Changes.day == date,
-                                                Changes.lesson_pos == lesson_pos,
-                                                Changes.class_letter == clas).first()
-            if row:
-                bot.send_message(message.from_user.id, f'{clas} должен быть в {row.cabinet} кабинете')
-            elif lesson:
-                bot.send_message(message.from_user.id, f'{clas} должен быть в {lesson.cabinet} кабинете')
-            else:
-                bot.send_message(message.from_user.id, 'Такой класс не был найден, попробуй снова')
+        lesson = db_sess.query(Lessons).filter(Lessons.class_letter == clas,
+                                               Lessons.day == date,
+                                               Lessons.lesson_pos == lesson_pos).first()
+        row = db_sess.query(Changes).filter(Changes.day == date,
+                                            Changes.lesson_pos == lesson_pos,
+                                            Changes.class_letter == clas).first()
+        if row:
+            print(1, row.cabinet)
+            bot.send_message(message.from_user.id, f'{clas} должен быть в {row.cabinet} кабинете')
+        elif lesson:
+            print(2, lesson.cabinet)
+            bot.send_message(message.from_user.id, f'{clas} должен быть в {lesson.cabinet} кабинете')
+        else:
+            bot.send_message(message.from_user.id, 'У этого класса уроки уже закончились')
 
 
 # возможна ошибка с авторизацией за завуча, когда выбирал учителя, но с нормальным ключом-идентификатором
@@ -334,13 +330,13 @@ def ismeneniya(message, day, clas, number, cabinet, lesson):
 def announce(message, args):
     db_sess = db_session.create_session()
     clas = args[1]
-    things_to_announce = ' '.join(message.text)
+    things_to_announce = message.text
     students = db_sess.query(User).filter(User.user_key == clas).all()
     cou = 0
     for student in students:
         try:
             cou += 1
-            bot.send_message(student.user_id, things_to_announce,
+            bot.send_message(student.user_id, f'{things_to_announce} от {message.from_user.last_name} {message.from_user.first_name}',
                              reply_markup=start_keyboard(message.from_user.id))
         except Exception as e:
             cou -= 1
