@@ -1,7 +1,8 @@
 import logging
-
+import pytz
 import telebot
 import datetime
+import time
 from datetime import datetime as dt, time as t
 from con2 import BOT_TOKEN
 from telebot import types
@@ -215,9 +216,8 @@ def poisk(clas, message):
         bot.send_message(message.from_user.id, 'В выходные невозможно найти класс')
     else:
         date = days[datetime.datetime.today().weekday()]
-        print(clas)
-        hour_now, minute_now = int((str(dt.now()).split()[1].split(':'))[0]), int((str(dt.now()).split()[1].split(':'))[1])
-        print(str(dt.now()).split()[1], hour_now, minute_now)
+        msc_time_now = dt.now(pytz.timezone('Europe/Moscow'))
+        hour_now, minute_now = int((str(msc_time_now).split()[1].split(':'))[0]), int((str(msc_time_now).split()[1].split(':'))[1])
         time_now = hour_now + minute_now / 60
         if time_now <= 9.25:
             lesson_pos = '1'
@@ -245,10 +245,8 @@ def poisk(clas, message):
                                             Changes.lesson_pos == lesson_pos,
                                             Changes.class_letter == clas).first()
         if row:
-            print(1, row.cabinet)
             bot.send_message(message.from_user.id, f'{clas} должен быть в {row.cabinet} кабинете')
         elif lesson:
-            print(2, lesson.cabinet)
             bot.send_message(message.from_user.id, f'{clas} должен быть в {lesson.cabinet} кабинете')
         else:
             bot.send_message(message.from_user.id, 'У этого класса уроки уже закончились')
