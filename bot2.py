@@ -11,6 +11,7 @@ from data import db_session
 from data.keys import Keys
 from data.lessons import Lessons
 from data.users import User
+from data.changes import Changes
 from excel_to_sql import Timetable
 from ban import Ban
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -144,6 +145,19 @@ def callback_work(call):
 @bot.message_handler(commands=['start'])
 def start(message):
     starts(message)
+
+
+@bot.message_handler(commands=['clear_changes'])
+def clear_changes(message):
+    db_sess = db_session.create_session()
+    user_check = db_sess.query(User).filter(User.user_id == message.from_user.id)
+    if unpack(user_check)[0].about == 'завуч':
+        db_sess.query(Changes).delete()
+        db_sess.commit()
+        bot.send_message(message.from_user.id, 'Готово')
+    else:
+        bot.send_message(message.from_user.id, 'У вас нет доступа на это')
+    clear_changes(message)
 
 
 @bot.message_handler(commands=['help'])
